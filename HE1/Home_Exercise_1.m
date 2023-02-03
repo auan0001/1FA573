@@ -37,12 +37,29 @@ end
 
 
 %% PLOTTING THE SOLUTIONS 
+gap = N/50;
 
 % plotting the sltns
-hold on 
+figure
+subplot(2,1,1)
 plot(t, analytic(c1, c2, t)) % analytic, for comp. 
-%plot(t, analyticp(c1, c2, t)) % analytic, for comp.
+hold on 
+grid on
+plot(t(1:gap:end), displacement(1:gap:end), 'rs') % numerical solution INSANE! 
+title(strcat('Displacement, RK4 for $N=', num2str(N), '$'))
+leg1 = legend('$y$', '$y_n$', 'location', 'southwest');
+set(leg1, 'Interpreter','latex');
+xlabel('$t \in [0,1]$')
+ylabel('Displacement $y$')
 
-plot(t, displacement, 'rs') % numerical solution INSANE! 
-
+subplot(2,1,2)
+plot(t, analyticp(c1, c2, t)) % analytic, for comp.
+hold on
+grid on
+plot(t(1:gap:end), momentum(1:gap:end), 'rs') % numerical solution INSANE!
+title(strcat('Momentum, RK4 for $N=', num2str(N), '$'))
+leg2 = legend('$p$', '$p_n$', 'location', 'northwest');
+set(leg2, 'Interpreter','latex');
+xlabel('$t \in [0,1]$')
+ylabel('Momentum $p$')
 hold off
