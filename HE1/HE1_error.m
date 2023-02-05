@@ -18,7 +18,7 @@ c2 = p_0/(2*pi);
 % numerically determining the solution values 
 
 % logspace error sweep
-N = logspace(2,5,4);
+N = logspace(5,2,4);
 
 figure
 for steps = 1:length(N)
@@ -68,20 +68,38 @@ for steps = 1:length(N)
   total_dist_err_p(steps) = err_p*err_p';  
 end
 % legend
-hl = legend(strcat('$h=', string(num2cell(h))+'$'), 'location', 'northwest')
+hl = legend(strcat('$h=', string(num2cell(h))+'$'), 'location', 'northwest');
 set(hl, 'Interpreter','latex')
 hold off
 
 %% TOTAL DISTANCE ERROR
 
 figure
-loglog(total_dist_err, (b-a)./N, '--v')
+loglog(total_dist_err, (b-a)./N, 'v')
 hold on
-loglog(total_dist_err_p, (b-a)./N, '--v')
 grid on
-title('Total distance error vs step size')
+loglog(total_dist_err_p, (b-a)./N, 'v')
+
+sz = logspace(2,5,4);
+fit_offset = 10^-7;
+
+% Fit for total displacement err
+p1=polyfit(log10(sz),log10(total_dist_err),1);
+pval1 = polyval(p1, log10(sz));
+loglog(10.^(pval1), sz*fit_offset, '-');
+
+% Fit for total momentum err
+p2=polyfit(log10(sz),log10(total_dist_err_p),1);
+pval2 = polyval(p2, log10(sz));
+loglog(10.^(pval2), sz*fit_offset, '-');
+
+title('Convergence analysis for $y_n$ and $p_n$')
 xlabel('$h$')
 ylabel('$\tilde{e} = e^T_n e_n$')
-leg = legend({'$\tilde{e}_y$', '$\tilde{e}_p$'}, 'location', 'northwest')
+
+order1 = strcat('$', num2str(p1(1)) ,'h$');
+order2 = strcat('$', num2str(p2(1)) ,'h$');
+
+leg = legend({'$\tilde{e}_y$', '$\tilde{e}_p$',  order1, order2}, 'location', 'northwest');
 set(leg, 'Interpreter','latex')
 hold off
