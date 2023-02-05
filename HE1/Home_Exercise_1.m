@@ -13,7 +13,7 @@ y_0 = 1; % start-displacement
 p_0 = 1; % end-displacement 
 a = 0; % start-value in time 
 b = 1; % end-value in time 
-N = 100; % number of points 
+N = 1000; % number of points 
 h = (b-a)/N; % step-size in time 
 t = linspace(a, b, N); % time-values to be controlled 
 
@@ -37,29 +37,46 @@ end
 
 
 %% PLOTTING THE SOLUTIONS 
+% Gap size between plotted data points
 gap = N/50;
 
-% plotting the sltns
+% Displacement
 figure
-subplot(2,1,1)
+subplot(2,3,1)
 plot(t, analytic(c1, c2, t)) % analytic, for comp. 
 hold on 
 grid on
 plot(t(1:gap:end), displacement(1:gap:end), 'rs') % numerical solution INSANE! 
-title(strcat('Displacement, RK4 for $N=', num2str(N), '$'))
+title('Displacement')
 leg1 = legend('$y$', '$y_n$', 'location', 'southwest');
 set(leg1, 'Interpreter','latex');
 xlabel('$t \in [0,1]$')
-ylabel('Displacement $y$')
+ylabel('$y$')
 
-subplot(2,1,2)
+% Momentum
+subplot(2,3,4)
 plot(t, analyticp(c1, c2, t)) % analytic, for comp.
 hold on
 grid on
 plot(t(1:gap:end), momentum(1:gap:end), 'rs') % numerical solution INSANE!
-title(strcat('Momentum, RK4 for $N=', num2str(N), '$'))
+title('Momentum')
 leg2 = legend('$p$', '$p_n$', 'location', 'northwest');
 set(leg2, 'Interpreter','latex');
 xlabel('$t \in [0,1]$')
-ylabel('Momentum $p$')
+ylabel('$p$')
+
+% Phase plane
+subplot(2,3,[2,3,5,6])
+plot(analytic(c1, c2, t), analyticp(c1, c2, t)) % analytic, for comp.
+hold on
+grid on
+plot(displacement(1:gap:end), momentum(1:gap:end), 'rs') % numerical solution INSANE!
+title('Phase plane')
+leg2 = legend('$(y,p)$', '$(y_n,p_n)$', 'location', 'northwest');
+set(leg2, 'Interpreter','latex');
+ylabel('Displacement $y$')
+xlabel('$y$')
+ylabel('$p$')
+
+sgtitle(strcat('Analytic and RK4 numerical solutions for $N=', num2str(N), '$'))
 hold off
