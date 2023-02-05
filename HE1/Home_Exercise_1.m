@@ -13,7 +13,7 @@ y_0 = 1; % start-displacement
 p_0 = 1; % end-displacement 
 a = 0; % start-value in time 
 b = 1; % end-value in time 
-N = 1000; % number of points 
+N = 100; % number of points 
 h = (b-a)/N; % step-size in time 
 t = linspace(a, b, N); % time-values to be controlled 
 
@@ -42,7 +42,7 @@ gap = N/50;
 
 % Displacement
 figure
-subplot(2,3,1)
+subplot(2,4,[1,2])
 plot(t, analytic(c1, c2, t)) % analytic, for comp. 
 hold on 
 grid on
@@ -54,7 +54,7 @@ xlabel('$t \in [0,1]$')
 ylabel('$y$')
 
 % Momentum
-subplot(2,3,4)
+subplot(2,4,[5,6])
 plot(t, analyticp(c1, c2, t)) % analytic, for comp.
 hold on
 grid on
@@ -66,7 +66,7 @@ xlabel('$t \in [0,1]$')
 ylabel('$p$')
 
 % Phase plane
-subplot(2,3,[2,3,5,6])
+subplot(2,4,[3,4,7,8])
 plot(analytic(c1, c2, t), analyticp(c1, c2, t)) % analytic, for comp.
 hold on
 grid on
