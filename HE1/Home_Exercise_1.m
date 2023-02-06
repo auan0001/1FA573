@@ -12,8 +12,8 @@ set(0,'defaulttextinterpreter','latex')
 y_0 = 1; % start-displacement 
 p_0 = 1; % end-displacement 
 a = 0; % start-value in time 
-b = 1; % end-value in time 
-N = 100; % number of points 
+b = 30; % end-value in time 
+N = 1000; % number of points 
 h = (b-a)/N; % step-size in time 
 t = linspace(a, b, N); % time-values to be controlled 
 
@@ -38,7 +38,8 @@ end
 
 %% PLOTTING THE SOLUTIONS 
 % Gap size between plotted data points
-gap = N/50;
+% gap = N/50;
+gap = 1;
 
 % Displacement
 figure
@@ -46,11 +47,11 @@ subplot(2,4,[1,2])
 plot(t, analytic(c1, c2, t)) % analytic, for comp. 
 hold on 
 grid on
-plot(t(1:gap:end), displacement(1:gap:end), 'rs') % numerical solution INSANE! 
+plot(t(1:gap:end), displacement(1:gap:end), '-r') % numerical solution INSANE! 
 title('Displacement')
 leg1 = legend('$y$', '$y_n$', 'location', 'southwest');
 set(leg1, 'Interpreter','latex');
-xlabel('$t \in [0,1]$')
+xlabel('$t$')
 ylabel('$y$')
 
 % Momentum
@@ -58,11 +59,11 @@ subplot(2,4,[5,6])
 plot(t, analyticp(c1, c2, t)) % analytic, for comp.
 hold on
 grid on
-plot(t(1:gap:end), momentum(1:gap:end), 'rs') % numerical solution INSANE!
+plot(t(1:gap:end), momentum(1:gap:end), '-r') % numerical solution INSANE!
 title('Momentum')
 leg2 = legend('$p$', '$p_n$', 'location', 'northwest');
 set(leg2, 'Interpreter','latex');
-xlabel('$t \in [0,1]$')
+xlabel('$t$')
 ylabel('$p$')
 
 % Phase plane
@@ -70,7 +71,7 @@ subplot(2,4,[3,4,7,8])
 plot(analytic(c1, c2, t), analyticp(c1, c2, t)) % analytic, for comp.
 hold on
 grid on
-plot(displacement(1:gap:end), momentum(1:gap:end), 'rs') % numerical solution INSANE!
+plot(displacement(1:gap:end), momentum(1:gap:end), '--') % numerical solution INSANE!
 title('Phase plane')
 leg2 = legend('$(y,p)$', '$(y_n,p_n)$', 'location', 'northwest');
 set(leg2, 'Interpreter','latex');

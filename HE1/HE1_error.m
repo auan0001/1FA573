@@ -84,16 +84,16 @@ sz = logspace(2,5,4);
 fit_offset = 10^-7;
 
 % Fit for total displacement err
-p1=polyfit(log10(sz),log10(total_dist_err),1);
+p1 = polyfit(log10(sz),log10(total_dist_err),1);
 pval1 = polyval(p1, log10(sz));
 loglog(10.^(pval1), sz*fit_offset, '-');
 
 % Fit for total momentum err
-p2=polyfit(log10(sz),log10(total_dist_err_p),1);
+p2 = polyfit(log10(sz),log10(total_dist_err_p),1);
 pval2 = polyval(p2, log10(sz));
 loglog(10.^(pval2), sz*fit_offset, '-');
 
-title('Convergence analysis for $y_n$ and $p_n$')
+title('Convergence analysis for $y_n$ and $p_n$ on $t \in [0,1]$')
 xlabel('$h$')
 ylabel('$\tilde{e} = e^T_n e_n$')
 
