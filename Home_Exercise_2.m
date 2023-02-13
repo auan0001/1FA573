@@ -2,22 +2,24 @@
 % problem focuses on implementation of numeric integration for solution of
 % Green's equation 
 
-r_max = 300; 
+% Defining parameter values 
+r_max = 30; 
 a = 4; % given constant 
 N = 1000; % number of steps 
+r_values = linspace(0, r_max/3, 1000); 
+y_numeric = zeros(1, length(r_values)); % prealocation
 
-r_values = linspace(0, r_max/30, 1000); 
-y_numeric = zeros(1, length(r_values));
-
+% numeric solutions. This is not efficient, but does not need to be. 
 for i = 1:length(r_values)
     
     y_numeric(i) = numeric_phi(r_values(i), a, r_max); 
     
 end 
 
+% plotting the solution 
 hold on
 
-plot(r_values, 225*analytic(a,r_values)) % MULT TO SEE ERROR FACTOR  
+plot(r_values, analytic(a,r_values))  
 plot(r_values, y_numeric)
 legend('analytic solution','numeric solution')
 
@@ -29,8 +31,11 @@ hold off
 
 function y = numeric_phi(r, a, r_max)
 
-first = phi_great(a, r)*bode(@less_integ, 0, r, 1000, a);  
-second = phi_less(a, r)*bode(@great_integ, r, r_max, 1000, a); 
+int_steps  = 1000; % number of integration steps 
+
+% we split the sltn in two for readability 
+first = phi_great(a, r)*bode(@less_integ, 0, r, int_steps, a);  
+second = phi_less(a, r)*bode(@great_integ, r, r_max, int_steps, a); 
 
 y = first + second;  
 
@@ -64,25 +69,6 @@ integ = integral; %returning the final value
 
 end 
 
-% numerical integration using Simpson's rule 
-% THIS GIVES SAME RESULT AS BODE - INTEGRATOR IS NOT THE PROBLEM
-function integ = simps(func, a, b, N, a_val)
-
-% a = lower end, b = upper end, N = number of integration steps
-
-h = (b-a)/N; 
-
-integral = 0; %prealocation 
-
-for n = 1:2:N-1
-    
-    integral = integral+(func(a_val, a+(n-1)*h)+4*func(a_val,a+n*h)+func(a_val,a+(n+1)*h));
-    
-end 
-
-integ = (h/3)*integral; 
-
-end 
 
 % defining integrand for phi_less term 
 function y = less_integ(a, r)
@@ -100,6 +86,7 @@ y = phi_great(a, r) * source;
 
 end 
 
+
 % first slt one to the homogeneous differential eqn, given 
 function y = phi_less(a, r)
 
@@ -114,10 +101,10 @@ function y = phi_great(a, r)
 
 end 
 
-% CHECK THERE MIGHT BE A BUG HERE 
-% Defining the given analytic sltn
+
+% defining the given analytic sltn
 function y = analytic(a, r)
 
-    y = ((1/(1-a^2)^2)^2)*(exp(-a*r) - exp(-r).*(1+0.5*((1-a^2).*r))); 
+    y = ((1/(1-a^2))^2)*(exp(-a*r) - exp(-r).*(1+0.5*((1-a^2).*r))); 
 
 end 
