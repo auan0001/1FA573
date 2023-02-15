@@ -28,19 +28,31 @@ def bisection(f,a,b,tol):
     elif f(c)*f(b) > 0:
         return bisection(f,a,c,tol)
 
+# Integration domain and grid size
 a = -1
 b = 1
 N = 1000
+x = np.linspace(a,b,N)
 
+# Step size
 h = (b-a)/N
 
+# Bisection tolerance
 tol = 10e-8
-order = 3
 
-x = np.linspace(a,b,N)
-f = lambda x: P(x,order)
+# Legendre polynomial order
+order = 17
+
+# Legendre polynomials, wrapper functions
+P_n = lambda x: P(x,order)
+P_n_prime = lambda x: dP(x,order)
+f = lambda x: np.sqrt(1-x*x)
+
+# Analytical answer to integral
+I_analytical = np.pi/2
+
 '''
-Pseudocode MATLAB:
+Pseudocode for finding roots in MATLAB:
     f - legendre function
 
     x_sign = sign(f(x))
@@ -50,19 +62,28 @@ Pseudocode MATLAB:
        bisection(f,x,x+h,tol) 
 '''
 
-
-x_sign = np.sign(f(x))
+# Finding roots of Legendre polynomial
+x_sign = np.sign(P_n(x))
 x_alt_sign = x_sign[0:N-1]*x_sign[1:N]
 x_alt_sign_idx = x[np.where(x_alt_sign < 0)]
 x_sz = x_alt_sign_idx.size
-roots = np.zeros(x_sz)
+x_n = np.zeros(x_sz)
 for i in range (0,x_sz):
-    roots[i] = bisection(f,x_alt_sign_idx[i],x_alt_sign_idx[i]+h,tol)
-print(roots)
+    x_n[i] = bisection(P_n,x_alt_sign_idx[i],x_alt_sign_idx[i]+h,tol)
 
-plt.plot(x,f(x))
-plt.plot(roots,f(roots),'o')
-plt.xlabel('x')
-plt.ylabel('P(x,l=' + str(order) + ')')
-plt.grid()
-plt.show()
+# Weights
+w_n = 2/((1-x_n*x_n)*P_n_prime(x_n)*P_n_prime(x_n))
+
+# Calculating the integral, printing absolute error
+I_numerical = np.sum(w_n*f(x_n))
+print(I_numerical)
+print(abs(I_numerical-I_analytical))
+
+# Plots
+
+# plt.plot(x,f(x))
+# plt.plot(x_n,f(x_n),'o')
+# plt.xlabel('x')
+# plt.ylabel('P(x,l=' + str(order) + ')')
+# plt.grid()
+# plt.show()
