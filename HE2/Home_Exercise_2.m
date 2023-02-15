@@ -9,13 +9,19 @@ hAxes.TickLabelInterpreter = 'latex';
 r_max = 30; 
 a = 4; % given constant 
 N = 1000; % number of steps 
-r_values = linspace(0, r_max, 1000); 
-y_numeric = zeros(1, length(r_values)); % prealocation
 
-% numeric solutions. This is not efficient, but does not need to be. 
-for i = 1:length(r_values)
-    y_numeric(i) = numeric_phi(r_values(i), a, r_max); 
-end 
+N = logspace(2,4,3)
+
+for i = 1:length(N)
+
+  r_values = linspace(0, r_max, N(i)); 
+  y_numeric = zeros(1, length(r_values)); % prealocation
+
+  % numeric solutions. This is not efficient, but does not need to be. 
+  for j = 1:length(r_values)
+    y_numeric(j) = numeric_phi(r_values(j), a, r_max, N(i)); 
+  end 
+end
 
 % plotting the solution 
 
