@@ -31,17 +31,17 @@ def bisection(f,a,b,tol):
 # Integration domain and grid size
 a = -1
 b = 1
-N = 1000
+N = 300
 x = np.linspace(a,b,N)
 
 # Step size
 h = (b-a)/N
 
 # Bisection tolerance
-tol = 10e-8
+tol = 10e-5
 
 # Legendre polynomial order
-order = 17
+order = 14
 
 # Legendre polynomials, wrapper functions
 P_n = lambda x: P(x,order)
@@ -62,6 +62,7 @@ Pseudocode for finding roots in MATLAB:
        bisection(f,x,x+h,tol) 
 '''
 
+
 # Finding roots of Legendre polynomial
 x_sign = np.sign(P_n(x))
 x_alt_sign = x_sign[0:N-1]*x_sign[1:N]
@@ -70,6 +71,7 @@ x_sz = x_alt_sign_idx.size
 x_n = np.zeros(x_sz)
 for i in range (0,x_sz):
     x_n[i] = bisection(P_n,x_alt_sign_idx[i],x_alt_sign_idx[i]+h,tol)
+print(x_n.size)
 
 # Weights
 w_n = 2/((1-x_n*x_n)*P_n_prime(x_n)*P_n_prime(x_n))
