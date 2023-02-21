@@ -1,35 +1,50 @@
-% Parameters
 clear
-
-N_bisect = 400;
-N = 24;
+% Parameters
+N_b = 300; % _b for bisection
 a = -1;
 b = 1;
 tol = 1e-5;
-h = (b-a)/N;
 
-h_bisect = (b-a)/N_bisect;
-x_bisect = linspace(a,b,N_bisect);
+% Soln to integral
+analytic = pi/2;
 
-% Legendre polynomial
-coeff = legendre_coeff(N);
-P_n = @(x) polyval(coeff, x);
+% 
+N = 4:4:24;
 
 % Integrate
-tic
-integral_gl = gausslegendre(@integrand, P_n, x_bisect, N_bisect, N, h_bisect, tol);
-toc
-disp("G-L = " + integral_gl)
+for i = 1:length(N)
+  h = (b-a)/N(i);
+  h_b = (b-a)/N_b;
+  x_b = linspace(a, b, N_b);
 
-tic
-integral_bode = bode(@integrand, a, b, h);
-toc
-disp("Bode = " + integral_bode)
+  % Legendre polynomial
+  coeff = legendre_coeff(N(i));
+  P_n = @(x) polyval(coeff, x);
 
-tic
-integral_simpson = simpson(@integrand, a, b, h);
-toc
-disp("Simpson = " + integral_simpson)
+  integral_gl = gauss_legendre(@integrand, P_n, N(i), x_b, N_b, h_b, tol);
+  err_gl(i) = abs_err(integral_gl, analytic);
+
+  integral_bode = bode(@integrand, a, b, h);
+  err_bode(i) = abs_err(integral_bode, analytic);
+
+  integral_simp = simpson(@integrand, a, b, h);
+  err_simp(i) = abs_err(integral_simp, analytic);
+end
+
+hold on
+grid on
+plot(N, err_gl, '.-')
+plot(N, err_bode, '.-')
+plot(N, err_simp, '.-')
+legend('G-L', 'Bode', 'Simpson')
+xlabel('N')
+ylabel('Error')
+hold off
+
+function err = abs_err(numeric, analytic)
+  err = abs(analytic - numeric);
+end
+
 
 function x_n = bisect_roots(f, x, N, h, tol)
   % Bisection method, for multiple roots, given a function handle
@@ -44,23 +59,17 @@ function x_n = bisect_roots(f, x, N, h, tol)
   for i = 1:length(x_alt_sign_idx)
     x_n(i) = bisect(x_alt_sign_idx(i), x_alt_sign_idx(i)+2*h, f, tol);
   end
-
 end
 
 % defining the integrand function 
 function y = integrand(x)
-
   y = sqrt(1 - x.^2); 
-
 end 
 
-%% IMPLEMENTING "NORMAL" INTEGRAL SOLVERS SIMPS AND BODE 
-
-function I = gausslegendre(integrand, P_n, x_bisect, N_bisect, l, h, tol)
+function I = gauss_legendre(integrand, P_n, l, x_bisect, N_bisect, h, tol)
   % Find roots, generate weights and compute integral
   x_n = bisect_roots(P_n, x_bisect, N_bisect, h, tol);
   I = sum(weights(x_n, l).*integrand(x_n));
-
 end
 
 function I = bode(f,a,b,h)
@@ -70,25 +79,17 @@ end
 
 function I = simpson(f,a,b,h)
   x = a:h:b;
-  I = h/3*(f(x(1))+2*sum(f(x(3:2:end-2)))+4*sum(f(x(2:2:end)))+f(x(end)));
+  I = h/3*(f(x(1)) + 2*sum(f(x(3:2:end-2))) + 4*sum(f(x(2:2:end))) + f(x(end)));
 end
-
-%% implementation of necessary functions 
 
 function w = weights(x_n, order)
   % Compute weights
   coeff = legendre_coeff(order+1);
   w = 2*(1-x_n.^2)./((order+1)^2.*(polyval(coeff, x_n).^2));
-
 end 
-
 
 function root = bisect(a, b, f, tol)
   % Implementation of bisection method for finding roots of a function f 
-
-  % a - lower bound 
-  % b - upper bound 
-  % f - function handle under consideration 
 
   if sign(f(a)) == sign(f(b))
     error('BOTH POINTS HAVE THE SAME SIGN')
@@ -102,10 +103,10 @@ function root = bisect(a, b, f, tol)
     else
       b = c; 
     end 
+
   end 
 
   root = a + ((b-a)/2); 
-
 end 
 
 function coeff = legendre_coeff(l)
