@@ -1,4 +1,7 @@
 clear
+set(0, 'defaulttextinterpreter', 'latex')
+hAxes.TickLabelInterpreter = 'latex';
+
 % Parameters
 N_b = 300; % _b for bisection
 a = -1;
@@ -62,7 +65,8 @@ hold on
 grid on
 semilogy(N, err_bode, '.-')
 semilogy(N, err_simp, '.-')
-legend('G-L', 'Bode', 'Simpson')
+err_leg = legend({'G-L', 'Bode', 'Simpson'}, 'location', 'northeast');
+set(err_leg, 'Interpreter','latex')
 xlabel('N')
 ylabel('Error')
 hold off
@@ -75,7 +79,8 @@ hold on
 grid on
 semilogy(N, mean(t_bode, 2), '.-')
 semilogy(N, mean(t_simp, 2), '.-')
-legend('G-L', 'Bode', 'Simpson')
+t_leg = legend({'G-L', 'Bode', 'Simpson'}, 'location', 'northeast');
+set(t_leg, 'Interpreter','latex')
 xlabel('N')
 ylabel('Time [s]')
 hold off
