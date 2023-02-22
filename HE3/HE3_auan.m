@@ -3,7 +3,7 @@ set(0, 'defaulttextinterpreter', 'latex')
 hAxes.TickLabelInterpreter = 'latex';
 
 % Parameters
-N_b = 300; % _b for bisection
+N_b = 400; % _b for bisection
 a = -1;
 b = 1;
 tol = 1e-5;
@@ -12,7 +12,7 @@ tol = 1e-5;
 analytic = pi/2;
 
 % 
-N = 4:4:24;
+N = 4:4:28;
 
 % Error loop
 for i = 1:length(N)
@@ -59,7 +59,7 @@ for i = 1:length(N)
   end
 end
 
-figure;
+handle(1) = figure;
 semilogy(N, err_gl, '.-')
 hold on
 grid on
@@ -69,11 +69,11 @@ err_leg = legend({'G-L', 'Bode', 'Simpson'}, 'location', 'northeast');
 set(err_leg, 'Interpreter','latex')
 title('Absolute error')
 xlabel('N')
-ylabel('Error')
+ylabel('$L^1$ Error')
 hold off
 
 
-figure;
+handle(2) = figure;
 % Times from mean of matrix rows
 semilogy(N, mean(t_gl, 2), '.-')
 hold on
@@ -87,11 +87,29 @@ xlabel('N')
 ylabel('Time [s]')
 hold off
 
+handle(3) = figure;
+% Times from mean of matrix rows
+loglog(mean(t_gl, 2), err_gl, '.-')
+hold on
+grid on
+loglog(mean(t_bode, 2), err_bode, '.-')
+loglog(mean(t_simp, 2), err_simp, '.-')
+t_leg = legend({'G-L', 'Bode', 'Simpson'}, 'location', 'northeast');
+set(t_leg, 'Interpreter','latex')
+title('Efficiency')
+xlabel('Time [s]')
+ylabel('$L^1$ Error')
+hold off
+
+% Save the figures
+savefig(handle, 'HE3.fig')
+
+%% FUNCTIONS
+
 function err = abs_err(numeric, analytic)
   % Absolte error
   err = abs(analytic - numeric);
 end
-
 
 function x_n = bisect_roots(f, x, N, h, tol)
   % Bisection method, for multiple roots, given a function handle
