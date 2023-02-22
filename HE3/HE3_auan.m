@@ -11,7 +11,7 @@ analytic = pi/2;
 % 
 N = 4:4:24;
 
-% Integrate
+% Error loop
 for i = 1:length(N)
   h = (b-a)/N(i);
   h_b = (b-a)/N_b;
@@ -31,17 +31,57 @@ for i = 1:length(N)
   err_simp(i) = abs_err(integral_simp, analytic);
 end
 
+% Error loop to get mean computational time
+for i = 1:length(N)
+  for j = 1:length(N)
+    h = (b-a)/N(i);
+    h_b = (b-a)/N_b;
+    x_b = linspace(a, b, N_b);
+
+    % Legendre polynomial
+    coeff = legendre_coeff(N(i));
+    P_n = @(x) polyval(coeff, x);
+
+    tic;
+    integral_gl = gauss_legendre(@integrand, P_n, N(i), x_b, N_b, h_b, tol);
+    t_gl(i,j) = toc;
+
+    tic;
+    integral_bode = bode(@integrand, a, b, h);
+    t_bode(i,j) = toc;
+
+    tic;
+    integral_simp = simpson(@integrand, a, b, h);
+    t_simp(i,j) = toc;
+  end
+end
+
+figure;
+semilogy(N, err_gl, '.-')
 hold on
 grid on
-plot(N, err_gl, '.-')
-plot(N, err_bode, '.-')
-plot(N, err_simp, '.-')
+semilogy(N, err_bode, '.-')
+semilogy(N, err_simp, '.-')
 legend('G-L', 'Bode', 'Simpson')
 xlabel('N')
 ylabel('Error')
 hold off
 
+
+figure;
+% Times from mean of matrix rows
+semilogy(N, mean(t_gl, 2), '.-')
+hold on
+grid on
+semilogy(N, mean(t_bode, 2), '.-')
+semilogy(N, mean(t_simp, 2), '.-')
+legend('G-L', 'Bode', 'Simpson')
+xlabel('N')
+ylabel('Time [s]')
+hold off
+
 function err = abs_err(numeric, analytic)
+  % Absolte error
   err = abs(analytic - numeric);
 end
 
@@ -53,7 +93,7 @@ function x_n = bisect_roots(f, x, N, h, tol)
   x_sign = sign(f(x));
   x_alt_sign = x_sign(1:N-1).*x_sign(2:N);
   % Find alternating signs
-  x_alt_sign_idx = x(find(x_alt_sign < 0));
+  x_alt_sign_idx = x(x_alt_sign < 0);
   % Bisect the root. Might need to adjust step size
   % depending on the discretization level
   for i = 1:length(x_alt_sign_idx)
