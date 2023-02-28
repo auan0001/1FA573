@@ -4,7 +4,7 @@ r_max = 1000; % completely arb. value
 r = linspace(0, r_max);
 numerical = zeros(length(r), 1); 
 
-V = 2; % PLACEHOLDER - CHECK!! 
+V = 20; % PLACEHOLDER - CHECK!! 
 E = 1; % PLACEHOLDER - CHECK!! 
 
 for i = 1:length(numerical)
@@ -29,14 +29,14 @@ hold off
 
 function t = num_theta(b, V , E, r_max)
 
-tol = 0.0001; 
-N = 1000; 
+tol = 0.0001; % tolerance when finding r_min value 
+N = 1000;  % total number of integration steps 
 r_min = bisec(0, r_max, b, V, E, @r_min, tol);
 
 first = bode(@integrand_1, b, r_max, b, E, V, N); 
 second = bode(@integrand_2, r_min, r_max, b, E, V, N); 
 
-t = (2*b) * (first + second);
+t = (2*b) * (first - second);
 
 end 
 
@@ -70,24 +70,27 @@ end
 % unused variables maintained for generality 
 function y = integrand_1(r, b, V , E)
 
-y = (1/(r^.2)) * sqrt(1 - ((b^2)/(r^2))); 
+y = 1/((r^.2) * sqrt(1 - ((b^2)/(r^2)))); 
 
 end 
 
 % second integrand in expression I8
 function y = integrand_2(r, b, V , E)
 
-y = (1/(r^.2)) * sqrt(1 - ((b^2)/(r^2)) - (V/E)); 
+y = 1/((r^.2) * sqrt(1 - ((b^2)/(r^2)) - (V/E)));
 
 end 
 
-% implementing bisec. method for finding the minimal of r_min
-% implementation of bisection method for finding roots of a function f 
+% implementing bisec. method for finding the minimum of r_min
 function root = bisec(l, u, b, V, E, f, tol)
 
 % l - lower bound 
 % u - upper bound 
+% b - impact parameter 
+% V - potential 
+% E - total energy, constant 
 % f - function handle under consideration 
+% tol - tolerance of calculation
 
 while abs(l - u) > tol 
     c = l + ((u-l)/2); % finding the midpoint 
@@ -99,14 +102,15 @@ while abs(l - u) > tol
     end 
 end 
 
-root = l + ((u-l)/2); 
+root = l + ((u-l)/2);
     
 end 
 
 % definition of the r_min-function
-function r = r_min(r, b, V, E)
+% THIS GIVES INFINITE INPUTS 
+function rad = r_min(r, b, V, E)
 
-r = 1 - ((b^2)/(r^2)) - (V/E);
+rad = 1 - ((b^2)/(r^2)) - (V/E);
 
 end 
 
@@ -122,6 +126,6 @@ end
 
 function theta = analytic_2(b, E, V0)
 
-theta = 2 * (asin(b/(r_max*sqty(1 - (V0/E)))) - asin(b/r_max));
+theta = 2 * (asin(b./(r_max*sqrt(1 - (V0/E)))) - asin(b./r_max));
 
 end 
