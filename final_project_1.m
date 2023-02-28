@@ -1,11 +1,14 @@
 % Code for final project, part 1. 
 
-r_max = 1000; % completely arb. value 
-r = linspace(0, r_max);
+r = linspace(0, r_max, 20);
+r_max = 10; % completely arb. value 
 numerical = zeros(length(r), 1); 
 
-V = 20; % PLACEHOLDER - CHECK!! 
+V = 2; % PLACEHOLDER - CHECK!! 
 E = 1; % PLACEHOLDER - CHECK!! 
+
+b = linspace(0.1, r_max, 20);
+rmin = b*sqrt(1-E/V);
 
 for i = 1:length(numerical)
     
@@ -18,8 +21,8 @@ end
 % ANSWER IS INSANE 
 hold on 
 
-plot(r, analytic_1(r))
-plot(r, numerical, 'rs-')
+% plot(r, analytic_1(r))
+plot(r, numerical, 'rs-', '.')
 
 hold off
 
