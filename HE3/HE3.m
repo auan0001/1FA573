@@ -139,7 +139,7 @@ end
 
 function I = bode(f,a,b,h)
   x = a:4*h:b-3*h;
-  I = sum(2*h/45*(7*f(x) + 32*f(x+h) + 12*f(x+2*h)+ 32*f(x+3*h) + 7*f(x+4*h)));
+  I = 2*h/45*sum((7*f(x) + 32*f(x+h) + 12*f(x+2*h)+ 32*f(x+3*h) + 7*f(x+4*h)));
 end
 
 function I = simpson(f,a,b,h)
