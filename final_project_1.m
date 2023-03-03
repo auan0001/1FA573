@@ -76,7 +76,7 @@ function integ = bode(f, l, u, b, E, V, r_min)
 % u - upper bound 
 % f - function handle under consideration 
 
-N = 1000;  % total number of integration steps ;
+N = 10000;  % total number of integration steps ;
 h = (u-l)/N; % step-length
 
 integral = 0; % prealocation 
