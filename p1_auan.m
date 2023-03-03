@@ -40,9 +40,9 @@ end
 theta = 2*impact.*(I1-I2);
 
 % Plots
-plot(impact,FN(impact))
+plot(impact,rad2deg(FN(impact)))
 hold on
-plot(impact,theta,'*')
+plot(impact,rad2deg(theta),'*')
 title('GODNATT SES IMORGON')
 legend('Anal', 'Numme', 'Location', 'Best')
 xlabel('$b$')
