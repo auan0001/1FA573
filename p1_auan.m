@@ -5,19 +5,17 @@ set(0, 'defaulttextinterpreter', 'latex')
 hAxes.TickLabelInterpreter = 'latex';
 
 % Spatial domain
-N = 40;
+N = 100;
 rmax = 10;
-bmin = 0.01;
-
-% Force real results from integral 
-r_real_ratio = 1.419;
+bmin = 1e-1;
+rmax_numerical = rmax-1e-6;
 
 % Array containing N impact b-values
-impact = linspace(bmin,rmax/r_real_ratio,N);
+impact = linspace(bmin,rmax_numerical,N);
 
 % Constant potential and energy
 V = 1;
-E = 2;
+E = 3*V;
 
 % Integrands
 FNI1 = @(r,b) 1/r^2 / sqrt(1-(b/r)^2);
@@ -31,22 +29,31 @@ FN = @(b) 2*asin(b/(rmax*sqrt(1-V/E))) - 2*asin(b/rmax);
 
 % Integrate for each rmin
 for i = 1:N
-  rmin = search(rmax, 1e-5, denominator, 0.2, impact(i));
+  rmin = search(rmax, 1e-12, denominator, 0.2, impact(i));
   I1(i) = rectangle_rule(FNI1,impact(i),sqrt(rmax - impact(i)),impact(i),N);
   I2(i) = rectangle_rule(FNI2,rmin, sqrt(rmax - rmin),impact(i),N);
 end
 
 % Numerical solution
-theta = 2*impact.*(I1-I2);
+theta_n = 2*impact.*(I1-I2);
+theta = real(FN(impact));
 
 % Plots
-plot(impact,rad2deg(FN(impact)))
+subplot(1,2,1)
+plot(impact, theta)
+grid on
 hold on
-plot(impact,rad2deg(theta),'*')
-title('GODNATT SES IMORGON')
-legend('Anal', 'Numme', 'Location', 'Best')
+plot(impact,theta_n,'.')
+hold off
+title('Scattering angle')
 xlabel('$b$')
 ylabel('$\theta$')
+legend('Analytical', 'Numerical', 'Location', 'Best')
+subplot(1,2,2)
+semilogy(impact,abs(theta_n-theta),'*-')
+title('Absolute error')
+xlabel('$b$')
+ylabel('$L^1(\theta)$')
 hold off
 grid on
 
