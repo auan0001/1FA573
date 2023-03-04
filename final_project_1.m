@@ -1,6 +1,6 @@
 % Code for final project, part 1. 
 
-r_max = 100; % completely arb. value 
+r_max = 150; % completely arb. value 
 r = linspace(0, r_max/2, 50); 
 numerical = zeros(length(r), 1); 
 
@@ -19,28 +19,29 @@ end
 hold on 
 %analytic_2(r, E, V, r_max)
 plot(r, analytic_2(r, E, V, r_max))
-plot(r, abs(numerical), 'rs-')
+plot(r, numerical, 'rs-')
 
 hold off
 
 %% Functions for determining the numeric sltn
 
 % numeric deflection function
-% VALID FOR E<U0
 function t = num_theta_1(b, V , E, r_max)
 
-tol = 0.0001; % tolerance when finding r_min value 
-r_min = bisec(0, r_max, b, V, E, @r_min, tol);
+r_min = bisec(0, r_max, b, V, E, @r_min);
 
 lower1 = 0.01; % we take a value close to 0, but not 0. 
 upper1 = sqrt(r_max - b);
 
-lower2 = 0.01; 
-%lower2 = sqrt(r_min - b);
+lower2 = 0.01; % we take a value close to 0, but not 0. 
 upper2 = sqrt(r_max - r_min);
 
+% first = bode(@integrand_3, lower1, upper1, b, E, V, r_min);
+% second = bode(@integrand_6, lower2, upper2, b, E, V, r_min); 
+
+% TESTING THE ORIGINAL INTEGRAND EXPRESSIONS 
 first = bode(@integrand_3, lower1, upper1, b, E, V, r_min);
-second = bode(@integrand_6, lower2, upper2, b, E, V, r_min); % THIS FUCKER GIVES COMPLEX
+second = bode(@integrand_6, lower2, upper2, b, E, V, r_min); 
 
 t = 2*b*(first - second);
 
@@ -76,7 +77,7 @@ function integ = bode(f, l, u, b, E, V, r_min)
 % u - upper bound 
 % f - function handle under consideration 
 
-N = 10000;  % total number of integration steps ;
+N = 1000;  % total number of integration steps ;
 h = (u-l)/N; % step-length
 
 integral = 0; % prealocation 
@@ -84,7 +85,6 @@ integral = 0; % prealocation
 for n = 1:4:N-3
     
     %the step is so fkn huge that the term has to be split in two  
-   % integrand_4(p, b, V , E, r_min)
     part_1 = 7*f(l+(n-1)*h, b, V , E, r_min) + 32*f(l+(h*n), b, V , E, r_min); 
     part_2 = 12*f(l+h*(n+1), b, V , E, r_min) + 32*f(l+h*(n+2), b, V , E, r_min) + 7*f(l+h*(n+3), b, V , E, r_min); 
     integral = integral + (((2*h)/45) * (part_1 + part_2)); 
@@ -100,14 +100,14 @@ end
 % unused variables maintained for generality 
 function y = integrand_1(r, b, V , E, r_min)
 
-y = 1/((r^.2) * sqrt(1 - ((b^2)/(r^2)))); 
+y = 1/(r^2 * sqrt(1 - b^2/r^2)); 
 
 end 
 
 % second integrand in expression I8
 function y = integrand_2(r, b, V , E, r_min)
 
-y = 1/((r^.2) * sqrt(1 - ((b^2)/(r^2)) - (V/E)));
+y = 1/(r^2 * sqrt(1 - b^2/r^2 - V/E));
 
 end
 
@@ -153,7 +153,7 @@ end
 
 %%
 % implementing bisec. method for finding the minimum of r_min
-function root = bisec(l, u, b, V, E, f, tol)
+function root = bisec(l, u, b, V, E, f)
 
 % l - lower bound 
 % u - upper bound 
@@ -161,7 +161,8 @@ function root = bisec(l, u, b, V, E, f, tol)
 % V - potential 
 % E - total energy, constant 
 % f - function handle under consideration 
-% tol - tolerance of calculation
+
+tol = 0.001; % tolerance of calculation
 
 while abs(l - u) > tol 
     c = l + ((u-l)/2); % finding the midpoint 
