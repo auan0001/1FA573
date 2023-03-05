@@ -21,13 +21,13 @@ set(0, 'defaulttextinterpreter', 'latex')
 hAxes.TickLabelInterpreter = 'latex';
 
 % Parameters
-N = 200;
+N = 100;
 Vmin = 0.1;
 Vmax = 100;
 rmax = 3;
 
-bmin = 1e-3;
-rmax_numerical = rmax-1e-3;
+bmin = 1e-2;
+rmax_numerical = rmax-1e-4;
 
 % Array containing N impact b-values
 impact = linspace(bmin,rmax_numerical,N);
@@ -43,11 +43,23 @@ theta_n = 2*impact.*(I1-I2);
 
 % Indexing helper since finite difference results in N->N-1 points
 idx = 1:length(theta_n)-1;
-cross_sec = impact(idx)./sin(theta_n(idx)).*1./abs(diff(theta_n));
+
+% Find indexes just before theta > 0
+idx0 = 1:(find(theta_n < 0, 1)-1);
+
+% Derivatives
+dtheta_db = diff(theta_n);
+db_dtheta = 1./diff(theta_n);
+
+% Cross-section
+cross_sec = impact(idx0)./sin(theta_n(idx0)).*abs(db_dtheta(idx0));
+
+% Plot skip param
+sk = 1:N/50:N;
 
 % Plots
-subplot(2,1,1)
-plot(impact, theta_n, '.-')
+subplot(2,2,1)
+plot(impact(sk), theta_n(sk), '.-')
 grid on
 hold on
 hold off
@@ -56,15 +68,32 @@ xlabel('$E \in [0.1V_0, 100V_0]$')
 ylabel('$\theta$')
 legend('Numerical', 'Location', 'Best')
 
-subplot(2,1,2)
-plot(impact(idx), cross_sec, '.-')
-grid on
+subplot(2,2,2)
+plot(theta_n(idx0), cross_sec, '.-')
 hold on
+grid on
 hold off
-title('Cross section (looks fishy but there is a singularity as mentioned in the book)')
-xlabel('$E \in [0.1V_0, 100V_0]$')
+xlabel('$\theta > 0$')
 ylabel('$\frac{d\sigma}{d\Omega}=\frac{b}{\sin(\theta)}|\frac{db}{d\theta}|$')
-legend('Numerical', 'Location', 'Best')
+title('Scattering cross section')
+
+subplot(2,2,3)
+plot(theta_n(idx0), dtheta_db(idx0), '.-')
+hold on
+grid on
+hold off
+xlabel('$\theta > 0$')
+ylabel('$\frac{d\theta}{db}$')
+title('Computed derivative')
+
+subplot(2,2,4)
+plot(theta_n(idx0), abs(db_dtheta(idx0)), '.-')
+hold on
+grid on
+hold off
+xlabel('$\theta > 0$')
+ylabel('$|\frac{db}{d\theta}|$')
+title('Computed absolute inverse derivative')
 
 % rectangle rule for function f on domain
 % transformed from [r1,r2] -> [0,(r2-r1)^1/2] 
