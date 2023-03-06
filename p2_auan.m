@@ -21,7 +21,7 @@ set(0, 'defaulttextinterpreter', 'latex')
 hAxes.TickLabelInterpreter = 'latex';
 
 % Parameters
-N = 100;
+N = 50;
 Vmin = 0.1;
 Vmax = 100;
 rmax = 3;
@@ -63,8 +63,8 @@ plot(impact(sk), theta_n(sk), '.-')
 grid on
 hold on
 hold off
-title('Scattering angle for Lennard-Jones potential')
-xlabel('$E \in [0.1V_0, 100V_0]$')
+title('Scattering angle for L-J 6-12 and $E \in [0.1V_0, 100V_0]$')
+xlabel('$b$')
 ylabel('$\theta$')
 legend('Numerical', 'Location', 'Best')
 
@@ -120,7 +120,7 @@ function x0 = search(x0, tol, f, V, E, dx, b)
 end
 
 function f = FNV(r)
-  f = 8*((r).^(-12)-(r).^(-6));
+  f = 4*((r).^(-12)-(r).^(-6));
 end
 
 function f = FNI1(r,b,~,~)
