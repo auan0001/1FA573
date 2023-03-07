@@ -28,7 +28,8 @@ for i = 1:length(kBT_J)
   for j = 1:sweep_phase
     nbrs = lattice_nbrs(S);
     S = metropolis(S, nbrs, kBT_J(i));
-    E(i) = lattice_E(S, nbrs);
+    % E(i) = lattice_E(S, nbrs);
+    M(i) = lattice_M(S);
   end
 end
 
@@ -36,6 +37,10 @@ win_min = 50;
 win_step = 1;
 win_max = 200;
 win_tol = 1e-2;
+
+% Interested in magnitude of M this time
+% Probably need to be normalized in some way
+M = abs(M);
 
 % TODO: Vectorize and test
 % Find where the absolute difference of the sums flattens out
@@ -45,8 +50,8 @@ win_tol = 1e-2;
 % Optimal window size <-> cheap, smooth, realistic
 win_sz = win_min:win_step:win_max;
 for sz = 1:length(win_sz)
-  E_smooth = movmean(E, win_sz(sz));
-  sum_abs_diff(sz) = sum(abs(E_smooth - E));
+  M_smooth = movmean(M, win_sz(sz));
+  sum_abs_diff(sz) = sum(abs(M_smooth - M));
 end
 
 % Find 'optimal' i.e cheap window size
@@ -61,16 +66,18 @@ else
   disp(['Window size: ' num2str(win_sz(win_opt))])
 end
 
-% Moving mean of E
-E_mov_mean = movmean(E, win_opt);
+% Moving mean of M
+M_mov_mean = movmean(M, win_opt);
 
 figure;
-% plot(kBT_J,E,'.')
+% plot(kBT_J,M,'.')
 hold on
 grid on
-plot(kBT_J,E_mov_mean,'-', 'Linewidth',2)
+title(['Lattice size N =' num2str(N)])
+plot(kBT_J,M_mov_mean,'-', 'Linewidth',2)
 xlabel('{k_bT}/J')
-ylabel('<E>')
+% ylabel('<E>')
+ylabel('M [magnitude]')
 hold off
 
 function S = metropolis(S, nbrs, kBT_J)
@@ -95,6 +102,11 @@ end
 function E = lattice_E(S, nbrs)
   % Energy Hamiltonian of the whole matrix
   E = -mean(S.*nbrs,'all');
+end
+
+function M = lattice_M(S)
+  % Energy Hamiltonian of the whole matrix
+  M = sum(sum(S));
 end
 
 function nbrs = lattice_nbrs(S)
