@@ -32,9 +32,9 @@ for i = 1:length(kBT_J)
   end
 end
 
-win_min = 40;
+win_min = 50;
 win_step = 1;
-win_max = 100;
+win_max = 200;
 win_tol = 1e-2;
 
 % TODO: Vectorize and test
@@ -65,16 +65,13 @@ end
 E_mov_mean = movmean(E, win_opt);
 
 figure;
-plot(kBT_J,E,'.')
+% plot(kBT_J,E,'.')
 hold on
 grid on
 plot(kBT_J,E_mov_mean,'-', 'Linewidth',2)
 xlabel('{k_bT}/J')
 ylabel('<E>')
 hold off
-
-figure;
-heatmap(S)
 
 function S = metropolis(S, nbrs, kBT_J)
   % Assumes square spin lattice
@@ -96,8 +93,8 @@ function spin = lattice_init(N)
 end
 
 function E = lattice_E(S, nbrs)
-  % Energy mean of whole matrix
-  E = mean(S.*nbrs,'all');
+  % Energy Hamiltonian of the whole matrix
+  E = -mean(S.*nbrs,'all');
 end
 
 function nbrs = lattice_nbrs(S)
