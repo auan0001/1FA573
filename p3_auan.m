@@ -1,6 +1,7 @@
 clear
-
+% Lattice and sample size
 N = 32;
+N_samples = 1000;
 
 % Init spin matrix
 S = lattice_init(N);
@@ -9,26 +10,69 @@ S = lattice_init(N);
 J = 1;
 
 % Length of thermalisation phase
-therm_phase = 300;
-sweep_phase = 300;
+therm_phase = N_samples;
+sweep_phase = N_samples;
 
-% kBT/J
-kBT_J = linspace(0,3,50)./J; 
+% kBT/J is our unit (from hints)
+unit_min = 1; 
+unit_max = 5; 
+kBT_J = linspace(unit_min,unit_max,N_samples)./J; 
 
-
+% TODO: ising function as driver function
 for i = 1:length(kBT_J)
+  % Thermalization phase for each k_B*T/J
   for j = 1:therm_phase
-    S = metropolis_hastings(S,kBT_J(i));
+    % nbrs = lattice_nbrs(S);
+    S = metropolis(S, lattice_nbrs(S), kBT_J(i));
   end
 
+  % Sweep phase for each k_B*T/J
   for j = 1:sweep_phase
-    S = metropolis(S,kBT_J(i));
     nbrs = lattice_nbrs(S);
-    E(i) = lattice_energy(S, nbrs);
+    S = metropolis(S, nbrs, kBT_J(i));
+    E(i) = lattice_E(S, nbrs);
   end
 end
 
-plot(kBT_J,E,'*')
+win_min = 40;
+win_step = 1;
+win_max = 100;
+win_tol = 1e-2;
+
+% TODO: Vectorize
+% Find where the absolute difference of the sums flattens out
+% To obtain a good rolling mean
+% Small window size <-> cheap, unsmooth, unrealistic
+% Too large window size <-> expensive, smooth, unrealistic
+% Optimal window size <-> cheap, smooth, realistic
+win_sz = win_min:win_step:win_max;
+for sz = 1:length(win_sz)
+  E_smooth = movmean(E, win_sz(sz));
+  sum_abs_diff(sz) = sum(abs(E_smooth - E))
+end
+
+% Find 'optimal' i.e cheap window size
+win_opt = find(diff(sum_abs_diff) <= win_tol, 1, 'last');
+% If we cannot find a good size, use the cheapest
+if isempty(win_opt)
+  % Use smallest size
+  win_opt = min(win_sz)
+  disp(['WARNING! Did not find optimal window size'])
+  disp(['Using fallback size: ' num2str(win_opt)])
+else
+  disp(['Window size: ' num2str(win_sz(win_opt))])
+end
+
+% Moving mean of E
+E_mov_mean = movmean(E, win_opt);
+
+plot(kBT_J,E,'.')
+hold on
+grid on
+plot(kBT_J,E_mov_mean,'-', 'Linewidth',2)
+xlabel('{k_bT}/J')
+ylabel('<E>')
+hold off
 
 function S = metropolis(S, nbrs, kBT_J)
   % Assumes square spin lattice
@@ -51,11 +95,12 @@ end
 
 function E = lattice_E(S, nbrs)
   % Energy mean of whole matrix
-  E = mean(S.*nbrs,'all'));
+  E = mean(S.*nbrs,'all');
+end
 
 function nbrs = lattice_nbrs(S)
   % Circular shift to compute neighbours
-  % Similar to MPI_Cart_shift
+  % Similar to MPI_Cart_shift or np.roll
   nbrs = circshift(S,[0 1]) ...
     + circshift(S, [0 -1]) ...
     + circshift (S,[1 0]) ...
