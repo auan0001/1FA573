@@ -1,19 +1,17 @@
 clear
 % Lattice and sample size
-N = 32;
+N = 8;
 N_samples = 1000;
 
 % Init spin matrix
 S = lattice_init(N);
 
-% Temperature and spin interaction
-J = 1;
-
-% Length of thermalisation phase
+% Length of phases
 therm_phase = N_samples;
 sweep_phase = N_samples;
 
 % kBT/J is our unit (from hints)
+J = 1;
 unit_min = 1; 
 unit_max = 5; 
 kBT_J = linspace(unit_min,unit_max,N_samples)./J; 
@@ -39,7 +37,7 @@ win_step = 1;
 win_max = 100;
 win_tol = 1e-2;
 
-% TODO: Vectorize
+% TODO: Vectorize and test
 % Find where the absolute difference of the sums flattens out
 % To obtain a good rolling mean
 % Small window size <-> cheap, unsmooth, unrealistic
@@ -48,7 +46,7 @@ win_tol = 1e-2;
 win_sz = win_min:win_step:win_max;
 for sz = 1:length(win_sz)
   E_smooth = movmean(E, win_sz(sz));
-  sum_abs_diff(sz) = sum(abs(E_smooth - E))
+  sum_abs_diff(sz) = sum(abs(E_smooth - E));
 end
 
 % Find 'optimal' i.e cheap window size
@@ -56,7 +54,7 @@ win_opt = find(diff(sum_abs_diff) <= win_tol, 1, 'last');
 % If we cannot find a good size, use the cheapest
 if isempty(win_opt)
   % Use smallest size
-  win_opt = min(win_sz)
+  win_opt = min(win_sz);
   disp(['WARNING! Did not find optimal window size'])
   disp(['Using fallback size: ' num2str(win_opt)])
 else
@@ -66,6 +64,7 @@ end
 % Moving mean of E
 E_mov_mean = movmean(E, win_opt);
 
+figure;
 plot(kBT_J,E,'.')
 hold on
 grid on
@@ -73,6 +72,9 @@ plot(kBT_J,E_mov_mean,'-', 'Linewidth',2)
 xlabel('{k_bT}/J')
 ylabel('<E>')
 hold off
+
+figure;
+heatmap(S)
 
 function S = metropolis(S, nbrs, kBT_J)
   % Assumes square spin lattice
