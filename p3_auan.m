@@ -1,19 +1,26 @@
 clear
+% TeX for plots
+set(0, 'defaulttextinterpreter', 'latex')
+hAxes.TickLabelInterpreter = 'latex';
+
 % Lattice and sample size
 N = [8 16 32];
-N_samples = 500;
+N_samples = 100;
 
 
 % Length of phases
-therm_phase = 1000;
+therm_phase = 20;
 
 % kBT/J is our unit (from hints)
 J = 1;
-unit_min = 1; 
-unit_max = 3; 
+unit_min = 0.5; 
+unit_max = 2; 
+
+% Critical temp
+T_crit = 2/log(1+sqrt(2));
 
 % From high to low temp gives efficient therm phase
-kBT_J = linspace(unit_max,unit_min,100)./J; 
+kBT_J = T_crit*linspace(unit_max,unit_min,100)./J; 
 
 for sz = 1:length(N)
   % Alloc 
@@ -42,16 +49,20 @@ for sz = 1:length(N)
   toc
 
 figure(1);
-plot(kBT_J,M(sz,:),'.')
+plot(kBT_J/T_crit,M(sz,:),'.')
 hold on
 grid on
-title(['Lattice sizes N =' num2str(N)])
+title(['Lattice sizes $N = {8,16,32}$'])
 % plot(kBT_J,M_mov_mean,'-', 'Linewidth',2)
-xlabel('{k_bT}/J')
+xlabel('$\frac{k_BT}{JT_c}$')
 % ylabel('<E>')
-ylabel('M [magnitude]')
+ylabel('$|M|$')
 end
-legend('N=8','N=16','N=32')
+T_crit_plot = linspace(0.5,1,1000)*T_crit;
+plot(T_crit_plot/T_crit, ...
+  real((1 - sinh(2*J*1./T_crit_plot).^-4).^(1/8)), ...
+  '-', 'LineWidth', 2);
+legend('N=8','N=16','N=32', 'T_c (critical)')
 hold off
 
 function S = metropolis(S, kBT_J)
