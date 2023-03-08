@@ -1,17 +1,16 @@
 clear
 % Lattice and sample size
 N = [8 16 32];
-N_samples = 400;
+N_samples = 500;
 
-% Init spin matrix
 
 % Length of phases
 therm_phase = 1000;
 
 % kBT/J is our unit (from hints)
 J = 1;
-unit_min = 0.1; 
-unit_max = 5; 
+unit_min = 1; 
+unit_max = 3; 
 
 % From high to low temp gives efficient therm phase
 kBT_J = linspace(unit_max,unit_min,100)./J; 
@@ -19,7 +18,7 @@ kBT_J = linspace(unit_max,unit_min,100)./J;
 for sz = 1:length(N)
   % Alloc 
   S = lattice_init(N(sz));
-  M = zeros(1,length(kBT_J));
+  M = zeros(length(N),length(kBT_J));
   tic
   % TODO: ising function as driver function
   for i = 1:length(kBT_J)
@@ -37,13 +36,13 @@ for sz = 1:length(N)
         M_MC = M_MC + lattice_M(S);
       end
        % Compute average after every MC step
-      M(i) = M_MC/(N(sz)*N_samples^2);
+      M(sz,i) = M_MC/(N(sz)*N_samples^2);
     end
   end
   toc
 
 figure(1);
-plot(kBT_J,M,'.')
+plot(kBT_J,M(sz,:),'.')
 hold on
 grid on
 title(['Lattice sizes N =' num2str(N)])
