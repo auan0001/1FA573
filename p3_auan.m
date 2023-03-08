@@ -1,7 +1,7 @@
 clear
 % Lattice and sample size
 N = [8 16 32];
-N_samples = 200;
+N_samples = 400;
 
 % Init spin matrix
 
@@ -17,6 +17,7 @@ unit_max = 5;
 kBT_J = linspace(unit_max,unit_min,100)./J; 
 
 for sz = 1:length(N)
+  % Alloc 
   S = lattice_init(N(sz));
   M = zeros(1,length(kBT_J));
   tic
@@ -95,9 +96,8 @@ function nbrs = site_nbrs(S, site)
   % Get nbrs given site
   N = size(S,1);
   [i,j] = ind2sub([N N], site);
-  n = mod(i-2, N)+1;
-  s = mod(i, N)+1;
-  w  = mod(j-2,N) + 1;
-  e = mod(j, N)+1;
-  nbrs = S(n,j)+S(s,j)+S(i,e)+S(i,e);
+  nbrs = S(mod(i-2, N)+1,j) ...
+    + S(mod(i, N)+1,j) ...
+    + S(i,mod(j, N)+1) ...
+    + S(i,mod(j-2,N)+1);
 end
