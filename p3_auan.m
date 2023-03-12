@@ -5,12 +5,26 @@ clear
 
 % Params
 lattice = 2.^[3 4 5]; J = 1;
-M_therm = 1000; M = 1; MC = 1;
-T_max = 3.5; T_min = 1; T_steps = 100;
+M_therm = 1000; M = 100;
 
-% Start from max temp since thermalization
-% phase is cheaper
-kBTJ = linspace(T_max,T_min,T_steps)/J;
+% For readabilty
+MC = 1;
+
+
+% Temperature interval struct
+dT = 0.1; dT_crit = 0.005;
+T = struct('min1',1.5,'max1',2-dT, ...
+  'crit1', 2, 'crit2', 2.5-dT_crit, ...
+  'min2', 2.5, 'max2', 3.5);
+
+% Flip from high to low T
+% due to cheaper therm phase
+kBTJ = fliplr( ...
+    [T.min1:dT:T.max1 ...
+    T.crit1:dT_crit:T.crit2 ...
+    T.min2:dT:T.max2])/J;
+% Total steps in T
+T_steps = length(kBTJ);
 
 % Possible energy states of nearest nbrs
 E_pos = -4:2:4;
@@ -18,6 +32,8 @@ E_pos = -4:2:4;
 % Alloc
 order = zeros(length(kBTJ), length(lattice));
 susc = zeros(length(kBTJ), length(lattice));
+
+% Unused
 % err_MAT = zeros(length(kBTJ), length(lattice));
 % mctau_MAT = zeros(length(kBTJ), length(lattice));
 % c_MAT= zeros(length(kBTJ), length(lattice));
@@ -27,7 +43,7 @@ for sz = 1:length(lattice)
   N = lattice(sz);
 
   % Simulation info
-  disp(['Lattice size N = ' num2str(N) ' on T = [' num2str(T_max) ',' num2str(T_min) ']']);
+  disp(['Lattice size N = ' num2str(N) ' on T = [' num2str(T.min1) ',' num2str(T.max2) ']']);
   disp([num2str(M*N*N) ' sweeps over ' num2str(MC*N*N) ' MC steps']);
   disp('********* Simulation started *********');
   p1 = datetime(now,'ConvertFrom','datenum');
@@ -38,7 +54,8 @@ for sz = 1:length(lattice)
 
   % Temperature loop
   for i = 1:length(kBTJ)
-    % Populate Boltzmann-Gibbs factors
+    % Populate Boltzmann-Gibbs factors.
+    % Easily modified to a Glauber step.
     h = min(1,exp(-2*E_pos./kBTJ(i)));
 
     % Thermalization phase
@@ -91,15 +108,15 @@ for sz = 1:length(lattice)
   save('susc.mat', 'susc');
 end
 
-subplot(2,1,1)
-plot(kBTJ,(order./lattice.^2), '.-')
-legend
-title('Order')
-subplot(2,1,2)
-legend
-plot(kBTJ,susc./lattice.^2, '.-')
-title('Susceptibilty')
-legend
+% subplot(2,1,1)
+% plot(kBTJ,(order./lattice.^2), '-')
+% legend
+% title('Order')
+% subplot(2,1,2)
+% legend
+% plot(kBTJ,susc./lattice.^2, '-')
+% title('Susceptibilty')
+% legend
 
 function nbrs = site_nbrs(S, site)
   % Get nbrs given site
