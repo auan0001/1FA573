@@ -8,15 +8,23 @@ plt.rc('text',usetex = True)
 plt.rc('font',size = 13)
 plt.rc('pgf', texsystem='pdflatex')  # or luatex, xelatex...
 
-xx = np.genfromtxt('/home/auan/1FA573/CXX/Data/run.txt',
+xx = np.genfromtxt('/home/auan/1FA573/CXX/Data/heat3_new.txt',
                      skip_header=0,
                      skip_footer=0,
                      names=True,
                      dtype=float,
                      delimiter=' ',
-                     usecols=(4,)).astype(float)
+                     usecols=(3,)).astype(float)
 
-y1 = np.genfromtxt('/home/auan/1FA573/CXX/Data/run.txt',
+y1 = np.genfromtxt('/home/auan/1FA573/CXX/Data/heat3_new.txt',
+                     skip_header=0,
+                     skip_footer=0,
+                     names=True,
+                     dtype=float,
+                     delimiter=' ',
+                     usecols=(2,)).astype(float)
+
+y2 = np.genfromtxt('/home/auan/1FA573/CXX/Data/heat3_new.txt',
                      skip_header=0,
                      skip_footer=0,
                      names=True,
@@ -24,12 +32,22 @@ y1 = np.genfromtxt('/home/auan/1FA573/CXX/Data/run.txt',
                      delimiter=' ',
                      usecols=(1,)).astype(float)
 
+y3 = np.genfromtxt('/home/auan/1FA573/CXX/Data/heat3_new.txt',
+                     skip_header=0,
+                     skip_footer=0,
+                     names=True,
+                     dtype=float,
+                     delimiter=' ',
+                     usecols=(0,)).astype(float)
+
 fig, ax = plt.subplots()
 plt.grid(linestyle='dashed')
-plt.title(r'4th Order Cumulant (Binder parameter)', fontsize = '22')
+plt.title(r'Specific heat', fontsize = '22')
 plt.plot(xx, y1, label = r'L=8', marker='x', linestyle='--', linewidth='1')
+plt.plot(xx, y2, label = r'L=16', marker='x', linestyle='--', linewidth='1')
+plt.plot(xx, y3, label = r'L=32', marker='x', linestyle='--', linewidth='1')
 plt.xlabel(r'$\frac{k_BT}{J}$', fontsize = '24')
-plt.ylabel(r'$U_L$', fontsize = '24')
+plt.ylabel(r'$C_B$', fontsize = '24')
 ratio = 1.0
 xleft, xright = ax.get_xlim()
 ybottom, ytop = ax.get_ylim()

@@ -8,7 +8,7 @@ plt.rc('text',usetex = True)
 plt.rc('font',size = 13)
 plt.rc('pgf', texsystem='pdflatex')  # or luatex, xelatex...
 
-xx = np.genfromtxt('/home/auan/1FA573/CXX/Data/binder.txt',
+xx = np.genfromtxt('/home/auan/1FA573/CXX/Data/binder_tc.txt',
                      skip_header=0,
                      skip_footer=0,
                      names=True,
@@ -16,7 +16,7 @@ xx = np.genfromtxt('/home/auan/1FA573/CXX/Data/binder.txt',
                      delimiter=' ',
                      usecols=(3,)).astype(float)
 
-y1 = np.genfromtxt('/home/auan/1FA573/CXX/Data/binder.txt',
+y1 = np.genfromtxt('/home/auan/1FA573/CXX/Data/binder_tc.txt',
                      skip_header=0,
                      skip_footer=0,
                      names=True,
@@ -24,7 +24,7 @@ y1 = np.genfromtxt('/home/auan/1FA573/CXX/Data/binder.txt',
                      delimiter=' ',
                      usecols=(0,)).astype(float)
 
-y2 = np.genfromtxt('/home/auan/1FA573/CXX/Data/binder.txt',
+y2 = np.genfromtxt('/home/auan/1FA573/CXX/Data/binder_tc.txt',
                      skip_header=0,
                      skip_footer=0,
                      names=True,
@@ -32,7 +32,7 @@ y2 = np.genfromtxt('/home/auan/1FA573/CXX/Data/binder.txt',
                      delimiter=' ',
                      usecols=(1,)).astype(float)
 
-y3 = np.genfromtxt('/home/auan/1FA573/CXX/Data/binder.txt',
+y3 = np.genfromtxt('/home/auan/1FA573/CXX/Data/binder_tc.txt',
                      skip_header=0,
                      skip_footer=0,
                      names=True,
