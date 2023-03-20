@@ -13,9 +13,9 @@
 #define norm(x) x/((double)N*N)
 
 // Global constants
-const int M = 2000; 
+const int M = 11000; 
 const int therm = 1000;
-const int MC = 100;
+const int MC = 1;
 
 // Metropolis-Hastings
 void metropolis(nc::NdArray<int>& S, int& N, nc::NdArray<double>& h);
@@ -27,16 +27,16 @@ int main (int argc, char *argv[])
 {
   std::ofstream out;
   std::ifstream in;
-  out.open("run.txt");
+  out.open("Data/run.txt");
   std::cout << "GO!" << std::endl;
 
   struct {
-    const double max = 2.3;
-    const double min = 2.2;
-    const double step = 15;
+    const double max = 5;
+    const double min = 0.1;
+    const double step = 80;
   } T;
 
-  nc::random::seed(666);
+  nc::random::seed(1337);
 
   // Measurements
   double m0 = 0;
@@ -51,8 +51,6 @@ int main (int argc, char *argv[])
   int E0 = 0;
 
   // Lattice sizes
-  // auto lattices = nc::NdArray<int>{8,16,32};
-  // auto lattices = nc::NdArray<int>{4,8,16};
   auto lattices = nc::NdArray<int>{8,16,32};
 
   // To compute Boltzmann-Gibbs factors
@@ -65,7 +63,7 @@ int main (int argc, char *argv[])
   // Set of possible energies in nbrhood
   auto E_pos = nc::linspace<double>(-4.0, 4.0, 5.0);
 
-  // order lambda
+  // Order parameter lambda
   auto order = [](auto S, auto N){return nc::abs(nc::sum<int>(S).item())/((double)SZ);};
 
   // Temperature loop
@@ -73,9 +71,8 @@ int main (int argc, char *argv[])
     // Init random matrix
     auto S = nc::random::choice<int>({-1,1},SZ).reshape(N,N);
     for (auto& T : kBTJ) {
-      // Populate G-B
+      // Populate G-B factors
       h = nc::minimum(one, nc::exp(-2.0*E_pos/T));
-
 
       // Thermalization
       for (size_t i = 0; i < therm*SZ; i++) {
