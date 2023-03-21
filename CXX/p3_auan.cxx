@@ -83,7 +83,7 @@ int main (int argc, char *argv[]) {
   // Init random matrix
   auto S = nc::random::choice<int>({-1,1},SZ).reshape(N,N);
 
-  // Measure arrs
+  // Measurement matrix
   auto measurement = nc::NdArray<double>(kBTJ.shape().cols,n_measures);
 
   for (size_t T = 0; T < kBTJ.shape().cols; T++) {
@@ -156,7 +156,7 @@ double H(nc::NdArray<int>& S, int& N) {
 // Write columns to file
 void tofile(nc::NdArray<double>& measurement, std::string file) {
   std::ofstream out;
-  out.open("Data/"+file);
+  out.open("/home/auan/1FA573/CXX/Data/"+file);
   // Header
   out << "temp " << "order " << "chi " << "cb " << "u" << std::endl;
   for (size_t i = 0; i < measurement.shape().rows; i++) {

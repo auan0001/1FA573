@@ -5,12 +5,12 @@ clear
 
 % Params
 % lattice = 2.^[3 4 5]; J = 1;
-lattice = 2.^[4]; J = 1;
+lattice = 2.^[2]; J = 1;
 % M = 100
-M_therm = 1000; M = 10000;
+M_therm = 1000; M = 1000;
 
 % Number of runs taken as the grand average
-grand_avg = 64;
+grand_avg = 1;
 
 % For readability
 MC = 1;
@@ -27,6 +27,7 @@ kBTJ = fliplr( ...
     [T.min1:dT:T.max1 ...
     T.crit1:dT_crit:T.crit2 ...
     T.min2:dT:T.max2])/J;
+kBTJ = linspace(5,1,31);
 
 
 % Possible energy states of nearest nbrs
@@ -49,7 +50,8 @@ T_steps = length(kBTJ);
 n_lattices = length(lattice);
 
 % Parallel for loop
-parfor ga = 1:grand_avg
+% parfor ga = 1:grand_avg
+for ga = 1:grand_avg
   for sz = 1:n_lattices
     % Lattice size for reuse
     N = lattice(sz);
@@ -69,7 +71,7 @@ parfor ga = 1:grand_avg
       t_iter1 = datetime(now,'ConvertFrom','datenum');
       % Populate Boltzmann-Gibbs factors
       % for Metropolis-Hastings choice
-      h = min(1,exp(-2*E_pos./kBTJ(i)));
+      h = min(1,exp(-2*E_pos./kBTJ(i)))
       % Glauber Heat-Bath choice
       % g = 1/(1 + exp(2*E_pos./kBTJ(i)));
 
@@ -85,8 +87,8 @@ parfor ga = 1:grand_avg
       E1 = lattice_E(S, nbrs);
 
       % MC phase
-      for im = 1:M*N
-        for ij = 1:MC*N
+      for im = 1:M*N*N
+        for ij = 1:MC*N*N
           S = metropolis(S,N,h);
         end
 
@@ -103,10 +105,10 @@ parfor ga = 1:grand_avg
 
       end
       % Averages
-      m = m/(M*N);
-      E = E/(M*N);
-      m2 = m2/(M*N)-m*m;
-      E2 = E2/(M*N)-E*E;
+      m = m/(M*N*N);
+      E = E/(M*N*N)
+      m2 = m2/(M*N*N)-m*m;
+      E2 = E2/(M*N*N)-E*E;
 
       % ***************** Unused *********************
       % c=(c/M-m*m*N*N)/m2*N*N;
@@ -115,8 +117,8 @@ parfor ga = 1:grand_avg
       % end
 
       % Get iteration time
-      t_iter2 = datetime(now,'ConvertFrom','datenum');
-      disp(['T = ' num2str(kBTJ(i)) ' [' num2str(i) '/' num2str(T_steps) '] of run ' num2str(ga) ' took ' char(t_iter2-t_iter1)])
+      % t_iter2 = datetime(now,'ConvertFrom','datenum');
+      % disp(['T = ' num2str(kBTJ(i)) ' [' num2str(i) '/' num2str(T_steps) '] of run ' num2str(ga) ' took ' char(t_iter2-t_iter1)])
       % err=sqrt(rm2*(2*tau+1)/M);
 
       % Put measurement matrices as pages in rank 3 tensor
@@ -196,9 +198,9 @@ end
 function S = metropolis(S,N,h)
   % Random site in S
   site = randi(N*N);
-  dE = S(site)*site_nbrs(S,N,site);
-  % Metropolis step
-  if dE <= 0 || rand() < h(((dE+4)/2+1))
+  dH = S(site)*site_nbrs(S,N,site);
+  % Take step step
+  if dH <= 0 || rand() < h((dH+4)/2+1)
     S(site) = -S(site);
   end
 end

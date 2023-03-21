@@ -98,13 +98,10 @@ title('Computed absolute inverse derivative')
 % rectangle rule for function f on domain
 % transformed from [r1,r2] -> [0,(r2-r1)^1/2] 
 function int = rectangle_rule(f,r1,r2,V,E,b,N)
-  h = r2/N;
+  h = r2/N; % (r2-r1)/N
   s = 0; % s as in sum
-  for iu = 1:N
-    u = h*(iu-0.5);
-    r = u^2 + r1;
-    s = s + u*f(r,b,V,E);
-    int = 2*h*s;
+  for i = 1:N
+    s = s + 2*h^2*(i-0.5) * f((h*(i-0.5))^2 + r1,b);
   end
 end
 
