@@ -1,7 +1,7 @@
 #include <NumCpp.hpp>
 #include <iostream>
 
-// Macros
+// Indexing, normalizing and averages
 #define SITE s[0],s[1]
 #define SZ N*N
 #define n1 (s[0]+1)%N, s[1]
@@ -12,26 +12,17 @@
 #define avgnorm(x) x/((double)M*N*N)
 #define norm(x) x/((double)N*N)
 
-// Columns
-#define TEMP 0
-#define ORDER 1
-#define CHI 2
-#define CB 3
-#define U 4
-
-// Global constants
-const int M = 200000; 
-const int therm = 1000;
-const int MC = 1;
-
 // Metropolis-Hastings
 void metropolis(nc::NdArray<int>& S, int& N, nc::NdArray<double>& h);
+
+// Heat-bath
+void heatbath(nc::NdArray<int>& S, int& N, nc::NdArray<double>& g);
 
 // Hamiltonian
 double H(nc::NdArray<int>& S, int& N);
 
 // Print data columns
-void tofile(nc::NdArray<double>& measurement, std::string file);
+void tofile(nc::NdArray<double>& measurements, std::string file);
 
 int main (int argc, char *argv[]) {
   if (argc < 3 || argc >= 4) {
@@ -43,6 +34,14 @@ int main (int argc, char *argv[]) {
   int N = atoi(argv[1]);
   std::string file = argv[2];
 
+  // Data columns
+  enum DATA_COLS {TEMP, ORDER, CHI, CB, U};
+
+  // Global constants
+  const int M = 200000; 
+  const int therm = 1000;
+  const int MC = 1;
+
   // Temperature steps
   struct {
     const double max = 5;
@@ -53,20 +52,21 @@ int main (int argc, char *argv[]) {
   nc::random::seed(1337);
 
   // Measurements
-  double m0 = 0;
-  double m = 0;
-  double E0 = 0;
-  double E = 0;
-  double E2 = 0;
-  double m2 = 0;
-  double m4 = 0;
-  double chi = 0;
-  double cb = 0;
-  double u = 0;
-  int n_measures = 5;
+  double m0 = 0,
+         m = 0,
+         E0 = 0,
+         E = 0,
+         E2 = 0,
+         m2 = 0,
+         m4 = 0,
+         chi = 0,
+         cb = 0,
+         u = 0;
+  int n_meas = 5;
 
   // To compute Boltzmann-Gibbs factors
   auto h = nc::NdArray<double>(1,5);
+  auto g = nc::NdArray<double>(1,5);
   auto one = nc::ones<double>(1,5);
 
   // Temperature from high to low
@@ -84,24 +84,27 @@ int main (int argc, char *argv[]) {
   auto S = nc::random::choice<int>({-1,1},SZ).reshape(N,N);
 
   // Measurement matrix
-  auto measurement = nc::NdArray<double>(kBTJ.shape().cols,n_measures);
+  auto measurements = nc::NdArray<double>(kBTJ.shape().cols,n_meas);
 
   for (size_t T = 0; T < kBTJ.shape().cols; T++) {
-    // Populate G-B factors
+    // Populate look-up arrays
     h = nc::minimum(one, nc::exp(-2.0*E_pos/kBTJ[T]));
+    // g = 1.0/(1.0 + nc::exp(-2.0*E_pos/kBTJ[T]));
 
     // Thermalization
     for (size_t i = 0; i < therm*SZ; i++) {
       metropolis(S, N, h);
+      // heatbath(S, N, g);
     }
 
     // Reset measurements
-    m = 0; m2 = 0; m4 = 0; E = 0; E2 = 0;
+    m = m2 = m4 = E = E2 = 0;
 
     // Simulation and measurements
     for (size_t i = 0; i < M; i++) {
       for (size_t j = 0; j < MC*SZ; j++) {
         metropolis(S, N, h);
+        // heatbath(S, N, g);
       }
 
       // Order param
@@ -124,24 +127,31 @@ int main (int argc, char *argv[]) {
     E2 = E2/M;
 
     // Add to measurements
-    measurement(T,TEMP) = kBTJ[T];
-    measurement(T,ORDER) = m;
-    measurement(T,CHI) = SZ*(m2-m*m)/(kBTJ[T]);
-    measurement(T,CB) = (E2-E*E)/(kBTJ[T]*kBTJ[T]);
-    measurement(T,U) = 1-m4/(3*(m2*m2));
+    measurements(T,TEMP) = kBTJ[T];
+    measurements(T,ORDER) = m;
+    measurements(T,CHI) = (m2-m*m)/(kBTJ[T]);
+    measurements(T,CB) = (E2-E*E)/(kBTJ[T]*kBTJ[T]);
+    measurements(T,U) = 1-m4/(3*(m2*m2));
 
   }
   // Print columns
-  tofile(measurement, file);
+  tofile(measurements, file);
   return 0;
 }
 
 // Metropolis-Hastings
 void metropolis(nc::NdArray<int>& S, int& N, nc::NdArray<double>& h) {
-  nc::NdArray<int>s = nc::random::randInt({1,2},N);
+  nc::NdArray<int> s = nc::random::randInt({1,2},N);
   double dH = S(SITE)*(S(n1)+S(n2)+S(n3)+S(n4));
   if (dH <= 0 || nc::random::rand<double>() < h[idx(dH)]) 
     S(SITE) = -S(SITE);
+}
+
+// Heat-bath
+void heatbath(nc::NdArray<int>& S, int& N, nc::NdArray<double>& g) {
+  nc::NdArray<int> s = nc::random::randInt({1,2},N);
+  double sj = S(n1)+S(n2)+S(n3)+S(n4);
+  S(SITE) = (nc::random::rand<double>() < g[idx(sj)]) ? 1: -1;
 }
 
 // Hamiltonian
@@ -154,14 +164,15 @@ double H(nc::NdArray<int>& S, int& N) {
 }
 
 // Write columns to file
-void tofile(nc::NdArray<double>& measurement, std::string file) {
+void tofile(nc::NdArray<double>& measurements, std::string file) {
   std::ofstream out;
   out.open("/home/auan/1FA573/CXX/Data/"+file);
   // Header
   out << "temp " << "order " << "chi " << "cb " << "u" << std::endl;
-  for (size_t i = 0; i < measurement.shape().rows; i++) {
-    for (size_t j = 0; j < measurement.shape().cols; j++) {
-      out << measurement(i,j) << ' ';
+  // Data
+  for (size_t i = 0; i < measurements.shape().rows; i++) {
+    for (size_t j = 0; j < measurements.shape().cols; j++) {
+      out << measurements(i,j) << ' ';
     }
     out << std::endl;
   }
