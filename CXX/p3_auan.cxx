@@ -13,31 +13,33 @@
 #define norm(x) x/((double)N*N)
 
 // Metropolis-Hastings
-void metropolis(nc::NdArray<int>& S, int& N, nc::NdArray<double>& h);
+void metropolis(nc::NdArray<int>& S, const int N, nc::NdArray<double>& kBT, const double J, const double B, double T_i);
 
 // Heat-bath
-void heatbath(nc::NdArray<int>& S, int& N, nc::NdArray<double>& g);
+void heatbath(nc::NdArray<int>& S, const int N, nc::NdArray<double>& kBT, double T_i); 
 
-// Hamiltonian
-double H(nc::NdArray<int>& S, int& N);
+// Energy
+double energy(nc::NdArray<int>& S, const int N, const double J, const double B);
 
 // Print data columns
 void tofile(nc::NdArray<double>& measurements, std::string file);
 
 int main (int argc, char *argv[]) {
-  if (argc < 3 || argc >= 4) {
-    std::cout << "USAGE: <lattice dim> <file>" << std::endl;
+  if (argc < 5 || argc >= 6) {
+    std::cout << std::endl << "USAGE: <lattice dim> <J> <B> <file>" << std::endl;
     return EXIT_FAILURE;
   }
 
   // Input args
-  int N = atoi(argv[1]);
-  std::string file = argv[2];
+  const int N = atoi(argv[1]);      // Square lattice dims
+  const double J = atof(argv[2]);   // Coupling strength
+  const double B = atof(argv[3]);   // External B-field strength
+  const std::string file = argv[4]; // File to store data in
 
   // Data columns
   enum DATA_COLS {TEMP, ORDER, CHI, CB, U};
 
-  // Global constants
+  // Simulation parameters
   const int M = 200000; 
   const int therm = 1000;
   const int MC = 1;
@@ -51,7 +53,9 @@ int main (int argc, char *argv[]) {
 
   nc::random::seed(1337);
 
+
   // Measurements
+  const int n_meas = 5;
   double m0 = 0,
          m = 0,
          E0 = 0,
@@ -62,39 +66,27 @@ int main (int argc, char *argv[]) {
          chi = 0,
          cb = 0,
          u = 0;
-  int n_meas = 5;
-
-  // To compute Boltzmann-Gibbs factors
-  auto h = nc::NdArray<double>(1,5);
-  auto g = nc::NdArray<double>(1,5);
-  auto one = nc::ones<double>(1,5);
 
   // Temperature from high to low
-  auto kBTJ = nc::fliplr(nc::linspace(T.min, T.max, T.step));
-
-  // Set of possible energies in nbrhood
-  auto E_pos = nc::linspace<double>(-4.0, 4.0, 5.0);
+  auto kBT = nc::fliplr(nc::linspace(T.min, T.max, T.step));
 
   // Order parameter lambda
   auto order = [](auto S, auto N){
     return nc::abs(nc::sum<int>(S).item())/((double)SZ);
   };
 
-  // Init random matrix
+  // Init spin matrix with random ICs
   auto S = nc::random::choice<int>({-1,1},SZ).reshape(N,N);
 
   // Measurement matrix
-  auto measurements = nc::NdArray<double>(kBTJ.shape().cols,n_meas);
+  auto measurements = nc::NdArray<double>(kBT.shape().cols,n_meas);
 
-  for (size_t T = 0; T < kBTJ.shape().cols; T++) {
-    // Populate look-up arrays
-    h = nc::minimum(one, nc::exp(-2.0*E_pos/kBTJ[T]));
-    // g = 1.0/(1.0 + nc::exp(-2.0*E_pos/kBTJ[T]));
+  for (size_t T_i = 0; T_i < kBT.shape().cols; T_i++) {
 
     // Thermalization
     for (size_t i = 0; i < therm*SZ; i++) {
-      metropolis(S, N, h);
-      // heatbath(S, N, g);
+      metropolis(S, N, kBT, J, B, T_i);
+      // heatbath(S, N, kBT, T_i);
     }
 
     // Reset measurements
@@ -103,14 +95,14 @@ int main (int argc, char *argv[]) {
     // Simulation and measurements
     for (size_t i = 0; i < M; i++) {
       for (size_t j = 0; j < MC*SZ; j++) {
-        metropolis(S, N, h);
-        // heatbath(S, N, g);
+        metropolis(S, N, kBT, J, B, T_i);
+        // heatbath(S, N, kBT, T_i);
       }
 
       // Order param
       m0 = order(S,N);
       // Energy
-      E0 = H(S,N);
+      E0 = energy(S,N,J,B);
 
       // Accumulate
       m += m0;
@@ -127,11 +119,11 @@ int main (int argc, char *argv[]) {
     E2 = E2/M;
 
     // Add to measurements
-    measurements(T,TEMP) = kBTJ[T];
-    measurements(T,ORDER) = m;
-    measurements(T,CHI) = (m2-m*m)/(kBTJ[T]);
-    measurements(T,CB) = (E2-E*E)/(kBTJ[T]*kBTJ[T]);
-    measurements(T,U) = 1-m4/(3*(m2*m2));
+    measurements(T_i,TEMP) = kBT[T_i];
+    measurements(T_i,ORDER) = m;
+    measurements(T_i,CHI) = (m2-m*m)/(kBT[T_i]);
+    measurements(T_i,CB) = (E2-E*E)/(kBT[T_i]*kBT[T_i]);
+    measurements(T_i,U) = 1-m4/(3*(m2*m2));
 
   }
   // Print columns
@@ -139,28 +131,30 @@ int main (int argc, char *argv[]) {
   return 0;
 }
 
-// Metropolis-Hastings
-void metropolis(nc::NdArray<int>& S, int& N, nc::NdArray<double>& h) {
+// Metropolis-Hastings (implemented with coupling and external field)
+void metropolis(nc::NdArray<int>& S, const int N, nc::NdArray<double>& kBT, const double J,  const double B, double T_i) {
   nc::NdArray<int> s = nc::random::randInt({1,2},N);
-  double dH = S(SITE)*(S(n1)+S(n2)+S(n3)+S(n4));
-  if (dH <= 0 || nc::random::rand<double>() < h[idx(dH)]) 
+  auto S_alpha_beta = S(SITE)*(S(n1)+S(n2)+S(n3)+S(n4));
+  auto dE = 2.0*J*S_alpha_beta+2.0*B*S(SITE);
+  if (dE <= 0 || nc::random::rand<double>() < nc::exp(-dE/kBT[T_i])) 
     S(SITE) = -S(SITE);
 }
 
-// Heat-bath
-void heatbath(nc::NdArray<int>& S, int& N, nc::NdArray<double>& g) {
+// Heat-bath (not implemented with coupling and external field)
+void heatbath(nc::NdArray<int>& S, const int N, nc::NdArray<double>& kBT, double T_i) {
   nc::NdArray<int> s = nc::random::randInt({1,2},N);
-  double sj = S(n1)+S(n2)+S(n3)+S(n4);
-  S(SITE) = (nc::random::rand<double>() < g[idx(sj)]) ? 1: -1;
+  auto s_j = S(n1)+S(n2)+S(n3)+S(n4);
+  auto p_i = 1.0/(1.0 + nc::exp(-2.0*s_j/kBT[T_i]));
+  S(SITE) = (nc::random::rand<double>() < p_i) ? 1: -1;
 }
 
-// Hamiltonian
-double H(nc::NdArray<int>& S, int& N) {
+// Energy
+double energy(nc::NdArray<int>& S, const int N, const double J, const double B) {
   auto nbrs = nc::roll(S, 1, nc::Axis::COL)
     + nc::roll(S, -1, nc::Axis::COL)
     + nc::roll(S, 1, nc::Axis::ROW)
     + nc::roll(S, -1, nc::Axis::ROW);
-  return -nc::abs(nc::sum(nc::matmul(S,nbrs))).item()/((double)SZ);
+  return (-J*nc::sum(nc::matmul(S,nbrs)).item() -B*nc::sum(S).item())/((double)SZ);
 }
 
 // Write columns to file
