@@ -1,5 +1,7 @@
 #include <NumCpp.hpp>
+#include <cstddef>
 #include <iostream>
+#include <string>
 
 // Indexing, normalizing and averages
 #define SITE s[0],s[1]
@@ -53,6 +55,11 @@ int main (int argc, char *argv[]) {
 
   nc::random::seed(1337);
 
+  // When to write spin matrix to file
+  const size_t T_1 = 0, // 5
+        T_c = 37, // Tc
+        T_2 = 50, // 2
+        T_3 = 64; // 1
 
   // Measurements
   const int n_meas = 5;
@@ -97,34 +104,40 @@ int main (int argc, char *argv[]) {
       }
 
       // Order param
-      m0 = order(S,N);
+      // m0 = order(S,N);
       // Energy
-      E0 = energy(S,N,J,B);
+      // E0 = energy(S,N,J,B);
 
       // Accumulate
-      m += m0;
-      m2 += m0*m0;
-      m4 += m0*m0*m0*m0;
-      E += E0;
-      E2 += E0*E0;
+      // m += m0;
+      // m2 += m0*m0;
+      // m4 += m0*m0*m0*m0;
+      // E += E0;
+      // E2 += E0*E0;
+    }
+    if (T_i == T_1 || T_i == T_c || T_i == T_2 || T_i == T_3) {
+      std::string latname = "/home/auan/1FA573/CXX/Data/Part3/S_"
+       + std::to_string(N) + '_' + std::to_string(T_i)
+       + '_' + std::to_string((int)B) + ".dat";
+      S.tofile(latname, ' ');
     }
     // Average over M samples
-    m = m/M;
-    m2 = m2/M;
-    m4 = m4/M;
-    E = E/M;
-    E2 = E2/M;
+    // m = m/M;
+    // m2 = m2/M;
+    // m4 = m4/M;
+    // E = E/M;
+    // E2 = E2/M;
 
     // Add to measurements
-    measurements(T_i,TEMP) = kBT[T_i];
-    measurements(T_i,ORDER) = m;
-    measurements(T_i,CHI) = (m2-m*m)/(kBT[T_i]);
-    measurements(T_i,CB) = (E2-E*E)/(kBT[T_i]*kBT[T_i]);
-    measurements(T_i,U) = 1-m4/(3*(m2*m2));
+    // measurements(T_i,TEMP) = kBT[T_i];
+    // measurements(T_i,ORDER) = m;
+    // measurements(T_i,CHI) = (m2-m*m)/(kBT[T_i]);
+    // measurements(T_i,CB) = (E2-E*E)/(kBT[T_i]*kBT[T_i]);
+    // measurements(T_i,U) = 1-m4/(3*(m2*m2));
 
   }
   // Print columns
-  tofile(measurements, file);
+  // tofile(measurements, file);
   return 0;
 }
 
