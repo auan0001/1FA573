@@ -36,13 +36,13 @@ int main (int argc, char *argv[]) {
   const double B = atof(argv[3]);   // External B-field strength
   const std::string file = argv[4]; // File to store data in
 
-  // Data columns
+  // Data columns (for writing to file)
   enum DATA_COLS {TEMP, ORDER, CHI, CB, U};
 
   // Simulation parameters
-  const int M = 200000; 
-  const int therm = 1000;
-  const int MC = 1;
+  const unsigned int M = 200000; 
+  const unsigned int therm = 1000;
+  const unsigned int MC = 1;
 
   // Temperature steps
   struct {
@@ -62,10 +62,7 @@ int main (int argc, char *argv[]) {
          E = 0,
          E2 = 0,
          m2 = 0,
-         m4 = 0,
-         chi = 0,
-         cb = 0,
-         u = 0;
+         m4 = 0;
 
   // Temperature from high to low
   auto kBT = nc::fliplr(nc::linspace(T.min, T.max, T.step));
