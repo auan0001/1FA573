@@ -43,7 +43,7 @@ for i in range(start,stop+1,2):
     ax[0].plot(x, y, label = r'$B='+str(i)+'$', marker='.', linestyle='--', linewidth='1', markersize='3')
 ax[0].grid()
 ax[0].set_title(r'Order parameter', fontsize = '18')
-ax[0].set_xlabel(r'$T$', fontsize = '18')
+ax[0].set_xlabel(r'$k_BT$', fontsize = '18')
 ax[0].set_ylabel(r'$|M|$', fontsize = '18')
 
 
@@ -67,7 +67,7 @@ for i in range(start,stop+1,2):
     ax[1].plot(x, y, label = r'$B='+str(i)+'$', marker='.', linestyle='--', linewidth='1', markersize='3')
 ax[1].grid()
 ax[1].set_title(r'Susceptibility', fontsize = '18')
-ax[1].set_xlabel(r'$T$', fontsize = '18')
+ax[1].set_xlabel(r'$k_BT$', fontsize = '18')
 ax[1].set_ylabel(r'$\chi$', fontsize = '18')
 
 for i in range(start,stop+1,2):
@@ -90,7 +90,7 @@ for i in range(start,stop+1,2):
     ax[2].plot(x, y, label = r'$B='+str(i)+'$', marker='.', linestyle='--', linewidth='1', markersize='3')
 ax[2].grid()
 ax[2].set_title(r'Specific heat', fontsize = '18')
-ax[2].set_xlabel(r'$T$', fontsize = '18')
+ax[2].set_xlabel(r'$k_BT$', fontsize = '18')
 ax[2].set_ylabel(r'$C_B$', fontsize = '18')
 
 fig.suptitle(r'Varying $B$ with $L=' + str(N) + '$, $J=-1$ over $200000$ sweeps', fontsize='22')

@@ -6,7 +6,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_executable(${PROJECT_NAME} p3_auan.cxx)
 
 target_compile_options(${PROJECT_NAME}
-                       PUBLIC -O3 -march=native -W -Wall -Wextra -pedantic -pedantic-errors)
+  # PUBLIC -O3 -march=native -W -Wall -Wextra -pedantic -pedantic-errors)
+  PUBLIC -Ofast -march=native -W -Wall -Wextra -pedantic -pedantic-errors)
 
 get_target_property(MAIN_CXXFLAGS ${PROJECT_NAME} COMPILE_OPTIONS)
 # also see: COMPILE_DEFINITIONS INCLUDE_DIRECTORIES

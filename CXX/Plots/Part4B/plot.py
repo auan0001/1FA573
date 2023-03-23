@@ -9,8 +9,8 @@ plt.rc('xtick', labelsize=18)
 plt.rc('ytick', labelsize=18)
 
 # Lattice dims with base 2
-low_dim = 3
-high_dim = 3
+low_dim = 5
+high_dim = 5
 part1 = '4B'
 part2 = '3'
 col = {'temp' : 0,
@@ -34,7 +34,7 @@ for i in range(low_dim,high_dim+1):
                       delimiter=' ',
                       usecols=(col['temp'],)).astype(float)
 
-    yg = np.genfromtxt(path1 + '/ising_' + str(N) + '_' + str(part1) + '.dat',
+    yh = np.genfromtxt(path1 + '/ising_' + str(N) + '_' + str(part1) + '.dat',
                        skip_header=1,
                        skip_footer=0,
                        names=True,
@@ -42,16 +42,16 @@ for i in range(low_dim,high_dim+1):
                        delimiter=' ',
                        usecols=(sym,)).astype(float)
 
-    # ym = np.genfromtxt(path2 + '/ising_' + str(N) + '_' + str(part2) + '.dat',
-    #                    skip_header=1,
-    #                    skip_footer=0,
-    #                    names=True,
-    #                    dtype=float,
-    #                    delimiter=' ',
-    #                    usecols=(sym,)).astype(float)
+    ym = np.genfromtxt(path2 + '/ising_' + str(N) + '_' + str(part2) + '.dat',
+                       skip_header=1,
+                       skip_footer=0,
+                       names=True,
+                       dtype=float,
+                       delimiter=' ',
+                       usecols=(sym,)).astype(float)
 
-    plt.plot(x, yg, label = r'$L_H$='+str(N), marker='.', linestyle='--', linewidth='1')
-    # plt.plot(x, ym, label = r'$L_M$='+str(N), marker='.', linestyle='--', linewidth='1')
+    plt.plot(x, yh, label = r'$L_H$='+str(N), marker='.', linestyle='--', linewidth='1')
+    plt.plot(x, ym, label = r'$L_M$='+str(N), marker='.', linestyle='--', linewidth='1')
 plt.title(r'Order parameter', fontsize = '22')
 plt.xlabel(r'$\frac{k_BT}{J}$', fontsize = '22')
 plt.ylabel(r'$|M|$', fontsize = '22')
