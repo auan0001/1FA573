@@ -18,7 +18,7 @@
 void metropolis(nc::NdArray<int>& S, const int N, nc::NdArray<double>& kBT, const double J, const double B, double T_i);
 
 // Heat-bath
-void heatbath(nc::NdArray<int>& S, const int N, nc::NdArray<double>& kBT, double T_i); 
+void heatbath(nc::NdArray<int>& S, const int N, nc::NdArray<double>& kBT, const double J, double T_i);
 
 // Energy
 double energy(nc::NdArray<int>& S, const int N, const double J, const double B);
@@ -53,13 +53,8 @@ int main (int argc, char *argv[]) {
     const double step = 80;
   } T;
 
+  // Set random seed for reproducibility
   nc::random::seed(1337);
-
-  // When to write spin matrix to file
-  const size_t T_1 = 0, // 5
-        T_c = 37, // Tc
-        T_2 = 50, // 2
-        T_3 = 64; // 1
 
   // Measurements
   const int n_meas = 5;
@@ -89,8 +84,8 @@ int main (int argc, char *argv[]) {
 
     // Thermalization
     for (size_t i = 0; i < therm*SZ; i++) {
-      metropolis(S, N, kBT, J, B, T_i);
-      // heatbath(S, N, kBT, T_i);
+      // metropolis(S, N, kBT, J, B, T_i);
+      heatbath(S, N, kBT, J, T_i);
     }
 
     // Reset measurements
@@ -99,49 +94,45 @@ int main (int argc, char *argv[]) {
     // Simulation and measurements
     for (size_t i = 0; i < M; i++) {
       for (size_t j = 0; j < MC*SZ; j++) {
-        metropolis(S, N, kBT, J, B, T_i);
-        // heatbath(S, N, kBT, T_i);
+        // metropolis(S, N, kBT, J, B, T_i);
+        heatbath(S, N, kBT, J, T_i);
       }
 
       // Order param
-      // m0 = order(S,N);
+      m0 = order(S,N);
       // Energy
-      // E0 = energy(S,N,J,B);
+      E0 = energy(S,N,J,B);
 
       // Accumulate
-      // m += m0;
-      // m2 += m0*m0;
-      // m4 += m0*m0*m0*m0;
-      // E += E0;
-      // E2 += E0*E0;
+      m += m0;
+      m2 += m0*m0;
+      m4 += m0*m0*m0*m0;
+      E += E0;
+      E2 += E0*E0;
     }
-    if (T_i == T_1 || T_i == T_c || T_i == T_2 || T_i == T_3) {
-      std::string latname = "/home/auan/1FA573/CXX/Data/Part3/S_"
-       + std::to_string(N) + '_' + std::to_string(T_i)
-       + '_' + std::to_string((int)B) + ".dat";
-      S.tofile(latname, ' ');
-    }
+
     // Average over M samples
-    // m = m/M;
-    // m2 = m2/M;
-    // m4 = m4/M;
-    // E = E/M;
-    // E2 = E2/M;
+    m = m/M;
+    m2 = m2/M;
+    m4 = m4/M;
+    E = E/M;
+    E2 = E2/M;
 
     // Add to measurements
-    // measurements(T_i,TEMP) = kBT[T_i];
-    // measurements(T_i,ORDER) = m;
-    // measurements(T_i,CHI) = (m2-m*m)/(kBT[T_i]);
-    // measurements(T_i,CB) = (E2-E*E)/(kBT[T_i]*kBT[T_i]);
-    // measurements(T_i,U) = 1-m4/(3*(m2*m2));
+    measurements(T_i,TEMP) = kBT[T_i];
+    measurements(T_i,ORDER) = m;
+    measurements(T_i,CHI) = (m2-m*m)/(kBT[T_i]);
+    measurements(T_i,CB) = (E2-E*E)/(kBT[T_i]*kBT[T_i]);
+    measurements(T_i,U) = 1-m4/(3*(m2*m2));
 
   }
+
   // Print columns
-  // tofile(measurements, file);
+  tofile(measurements, file);
   return 0;
 }
 
-// Metropolis-Hastings (implemented with coupling and external field)
+// Metropolis-Hastings (implemented with external field)
 void metropolis(nc::NdArray<int>& S, const int N, nc::NdArray<double>& kBT, const double J,  const double B, double T_i) {
   nc::NdArray<int> s = nc::random::randInt({1,2},N);
   auto S_alpha_beta = S(SITE)*(S(n1)+S(n2)+S(n3)+S(n4));
@@ -150,11 +141,12 @@ void metropolis(nc::NdArray<int>& S, const int N, nc::NdArray<double>& kBT, cons
     S(SITE) = -S(SITE);
 }
 
-// Heat-bath (not implemented with coupling and external field)
-void heatbath(nc::NdArray<int>& S, const int N, nc::NdArray<double>& kBT, double T_i) {
+// Heat-bath (not implemented with external field)
+void heatbath(nc::NdArray<int>& S, const int N, nc::NdArray<double>& kBT, const double J, double T_i) {
   nc::NdArray<int> s = nc::random::randInt({1,2},N);
   auto s_j = S(n1)+S(n2)+S(n3)+S(n4);
-  auto p_i = 1.0/(1.0 + nc::exp(-2.0*s_j/kBT[T_i]));
+  auto p_i = 1.0/(1.0 + nc::exp(-2.0*J*s_j/kBT[T_i]));
+  // Always accept the change
   S(SITE) = (nc::random::rand<double>() < p_i) ? 1: -1;
 }
 
@@ -167,10 +159,11 @@ double energy(nc::NdArray<int>& S, const int N, const double J, const double B) 
   return (-J*nc::sum(nc::matmul(S,nbrs)).item() -B*nc::sum(S).item())/((double)SZ);
 }
 
-// Write columns to file
+// Write columns to file (NumCPP has a tofile() function that can be reshaped during the data analysis)
 void tofile(nc::NdArray<double>& measurements, std::string file) {
   std::ofstream out;
-  out.open("/home/auan/1FA573/CXX/Data/"+file);
+  std::string path = "/home/auan/1FA573/CXX/Data/";
+  out.open(path+file);
   // Header
   out << "temp " << "order " << "chi " << "cb " << "u" << std::endl;
   // Data

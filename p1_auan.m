@@ -8,7 +8,7 @@ hAxes.TickLabelInterpreter = 'latex';
 N = 50;
 rmax = 10;
 bmin = 1e-1;
-rmax_numerical = rmax-1e-6;
+rmax_numerical = rmax-1e-3;
 
 % Array containing N impact b-values
 impact = linspace(bmin,rmax_numerical,N);
@@ -72,13 +72,13 @@ plot(impact,theta_n1,'.')
 hold off
 title('Scattering angle for $E>V_0$')
 xlabel('$b$')
-ylabel('$\theta$')
-legend('Analytical', 'Numerical', 'Location', 'Best')
+ylabel('$\Theta$')
+legend('\Theta', '\Theta_n', 'Location', 'Best')
 subplot(2,2,2)
 semilogy(impact,err1,'*-')
 title('Absolute error for $E>V_0$')
 xlabel('$b$')
-ylabel('$L^1(\theta)$')
+ylabel('$L^1(\Theta)$')
 hold off
 grid on
 
@@ -90,13 +90,13 @@ plot(impact,theta_n2,'.')
 hold off
 title('Scattering angle for $E<V_0$')
 xlabel('$b$')
-ylabel('$\theta$')
-legend('Analytical', 'Numerical', 'Location', 'Best')
+ylabel('$\Theta$')
+legend('\Theta', '\Theta_n', 'Location', 'Best')
 subplot(2,2,4)
 semilogy(impact,err2,'*-')
 title('Absolute error for $E<V_0$')
 xlabel('$b$')
-ylabel('$L^1(\theta)$')
+ylabel('$L^1(\Theta)$')
 hold off
 grid on
 

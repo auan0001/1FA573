@@ -1,8 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 # plt.style.use('seaborn-colorblind')
-params = {'text.latex.preamble' : [r'\usepackage{siunitx}', r'\usepackage{amsmath}', r'\usepackage{amsfonts}', r'\usepackage{amssymb}']}
-plt.rcParams.update(params)
+# params = {'text.latex.preamble' : [r'\usepackage{siunitx}', r'\usepackage{amsmath}', r'\usepackage{amsfonts}', r'\usepackage{amssymb}']}
+# plt.rcParams.update(params)
 plt.rc('text',usetex = True)
 # plt.rc('font',size = 15)
 plt.rc('pgf', texsystem='pdflatex')  # or luatex, xelatex...

@@ -58,50 +58,53 @@ cross_sec = impact(idx0)./sin(theta_n(idx0)).*abs(db_dtheta(idx0));
 sk = 1:N/50:N;
 
 % Plots
-subplot(2,2,1)
+subplot(1,2,1)
 plot(impact(sk), theta_n(sk), '.-')
 grid on
 hold on
 hold off
-title('Scattering angle for L-J 6-12 and $E \in [0.1V_0, 100V_0]$')
+title('$\Theta(b)$ for L-J, $E \in [0.1V_0, 100V_0]$')
 xlabel('$b$')
-ylabel('$\theta$')
-legend('Numerical', 'Location', 'Best')
+ylabel('$\Theta$')
+legend('\Theta(b)_n', 'Location', 'Best')
 
-subplot(2,2,2)
+subplot(1,2,2)
 plot(theta_n(idx0), cross_sec, '.-')
 hold on
 grid on
 hold off
-xlabel('$\theta > 0$')
-ylabel('$\frac{d\sigma}{d\Omega}=\frac{b}{\sin(\theta)}|\frac{db}{d\theta}|$')
+xlabel('$\Theta > 0$')
+ylabel('$\frac{d\sigma}{d\Omega}=\frac{b}{\sin(\Theta)}|\frac{db}{d\Theta}|$')
 title('Scattering cross section')
 
-subplot(2,2,3)
-plot(theta_n(idx0), dtheta_db(idx0), '.-')
-hold on
-grid on
-hold off
-xlabel('$\theta > 0$')
-ylabel('$\frac{d\theta}{db}$')
-title('Computed derivative')
-
-subplot(2,2,4)
-plot(theta_n(idx0), abs(db_dtheta(idx0)), '.-')
-hold on
-grid on
-hold off
-xlabel('$\theta > 0$')
-ylabel('$|\frac{db}{d\theta}|$')
-title('Computed absolute inverse derivative')
+% subplot(2,2,3)
+% plot(theta_n(idx0), dtheta_db(idx0), '.-')
+% hold on
+% grid on
+% hold off
+% xlabel('$\theta > 0$')
+% ylabel('$\frac{d\theta}{db}$')
+% title('Computed derivative')
+%
+% subplot(2,2,4)
+% plot(theta_n(idx0), abs(db_dtheta(idx0)), '.-')
+% hold on
+% grid on
+% hold off
+% xlabel('$\theta > 0$')
+% ylabel('$|\frac{db}{d\theta}|$')
+% title('Computed absolute inverse derivative')
 
 % rectangle rule for function f on domain
 % transformed from [r1,r2] -> [0,(r2-r1)^1/2] 
 function int = rectangle_rule(f,r1,r2,V,E,b,N)
-  h = r2/N; % (r2-r1)/N
+  h = r2/N;
   s = 0; % s as in sum
-  for i = 1:N
-    s = s + 2*h^2*(i-0.5) * f((h*(i-0.5))^2 + r1,b);
+  for iu = 1:N
+    u = h*(iu-0.5);
+    r = u^2 + r1;
+    s = s + u*f(r,b,V,E);
+    int = 2*h*s;
   end
 end
 

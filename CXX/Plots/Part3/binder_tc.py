@@ -1,7 +1,5 @@
 import matplotlib.pyplot as plt
 import numpy as np
-params = {'text.latex.preamble' : [r'\usepackage{siunitx}', r'\usepackage{amsmath}', r'\usepackage{amsfonts}', r'\usepackage{amssymb}']}
-plt.rcParams.update(params)
 plt.rc('text',usetex = True)
 plt.rc('pgf', texsystem='pdflatex')  # or luatex, xelatex...
 plt.rc('xtick', labelsize=18) 
@@ -41,6 +39,7 @@ for i in range(low_dim,high_dim+1):
                        usecols=(col['u'],)).astype(float)
 
     ax[0].plot(x, y, label = r'L='+str(N), marker='.', linestyle='--', linewidth='1', markersize='3')
+
 ax[0].vlines(x=2.2691853,ymin=min(y),ymax=max(y), label = r'$T_c$', color='grey', linestyle='--')
 ax[0].set_title(r'4th Order Cumulant (Binder parameter)', fontsize = '18')
 ax[0].set_xlabel(r'$\frac{k_BT}{J}$', fontsize = '18')
